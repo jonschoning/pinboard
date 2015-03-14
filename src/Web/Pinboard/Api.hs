@@ -15,6 +15,7 @@ module Web.Pinboard.Api
       Tag,
       Count,
       getPostsRecent,
+      getPostsDates,
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
@@ -39,4 +40,13 @@ getPostsRecent tags count = pinboardJson (PinboardRequest url params)
     url = "posts/recent" 
     params = catMaybes [ Tag . intercalate "+" <$> tags
                        , Count <$> count ]
+
+-- | Returns a list of dates with the number of posts at each date.
+getPostsDates
+  :: Maybe [Tag] -- ^ filter by up to three tags
+  -> Pinboard Dates
+getPostsDates tags = pinboardJson (PinboardRequest url params)
+  where 
+    url = "posts/dates" 
+    params = catMaybes [ Tag . intercalate "+" <$> tags ]
 

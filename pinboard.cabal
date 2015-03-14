@@ -27,6 +27,8 @@ library
                      , time
                      , transformers
                      , unordered-containers
+                     , containers
+                     , old-locale
               
   default-language:    Haskell2010
   other-modules:       
