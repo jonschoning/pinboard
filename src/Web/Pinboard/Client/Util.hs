@@ -6,24 +6,34 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Web.Pinboard.Client.Util
-    ( -- * Utils
-      fromSeconds
-    , toSeconds
+    ( 
+      mkConfig
+    , fromApiToken
     , paramsToByteString
     , toText
     , toTextLower
-    , getParams
     , (</>)
+    , paramToName
+    , paramToText
+    , encodeParams
     ) where
 
-import           Data.ByteString       (ByteString)
 import           Data.Monoid           (Monoid, mconcat, mempty, (<>))
 import           Data.String           (IsString)
+import           Data.ByteString       (ByteString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
-import           Data.Time.Clock       (UTCTime)
-import           Data.Time.Clock.POSIX (posixSecondsToUTCTime, utcTimeToPOSIXSeconds)
+import           Data.Data (toConstr)
+import           Web.Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
+
+------------------------------------------------------------------------------
+
+mkConfig :: PinboardConfig
+mkConfig = PinboardConfig { debug = False, apiToken = mempty }
+
+fromApiToken :: ByteString -> PinboardConfig
+fromApiToken token = PinboardConfig { debug = False, apiToken = token }
 
 ------------------------------------------------------------------------------
 -- | Conversion from a `Show` constrained type to `Text`
@@ -48,10 +58,23 @@ paramsToByteString
     => [(m, m)]
     -> m
 paramsToByteString []           = mempty
-paramsToByteString ((x,y) : []) = x <> "=" <> y
+paramsToByteString [(x,y)] = x <> "=" <> y
 paramsToByteString ((x,y) : xs) =
     mconcat [ x, "=", y, "&" ] <> paramsToByteString xs
 
+-- | Retrieve and encode the optional parameters
+encodeParams :: [Param] -> ParamsBS
+encodeParams xs = do 
+  x <- xs 
+  return ((T.encodeUtf8 . paramToName) x, (T.encodeUtf8 . paramToText) x)
+
+paramToText :: Param -> Text
+paramToText (Tag a) = a
+paramToText (Format a) = a
+paramToText (Count a) = toText a
+
+paramToName :: Param -> Text
+paramToName = toTextLower . toConstr
 ------------------------------------------------------------------------------
 -- | Forward slash interspersion on `Monoid` and `IsString`
 -- constrained types
@@ -61,24 +84,3 @@ paramsToByteString ((x,y) : xs) =
     -> m
     -> m
 m1 </> m2 = m1 <> "/" <> m2
-
-------------------------------------------------------------------------------
--- | Convert an `Integer` to a `UTCTime`
-fromSeconds
-    :: Integer
-    -> UTCTime
-fromSeconds = posixSecondsToUTCTime . fromInteger
-
-------------------------------------------------------------------------------
--- | Convert a `UTCTime` to a `Integer`
-toSeconds
-    :: UTCTime
-    -> Integer 
-toSeconds = read . takeWhile (/='.') . show . utcTimeToPOSIXSeconds
-
-------------------------------------------------------------------------------
--- | Retrieve and encode the optional parameters
-getParams
-    :: [(ByteString, Maybe Text)]
-    -> [(ByteString, ByteString)]
-getParams xs = [ (x, T.encodeUtf8 y) | (x, Just y) <- xs ]

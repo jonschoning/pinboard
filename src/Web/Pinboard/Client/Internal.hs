@@ -46,8 +46,9 @@ import           Web.Pinboard.Client.Error  (PinboardError (..),
                                              defaultPinboardError)
 import           Web.Pinboard.Client.Types  (Pinboard,
                                              PinboardConfig (..),
-                                             PinboardRequest (..))
-import           Web.Pinboard.Client.Util   (paramsToByteString, toText)
+                                             PinboardRequest (..),
+                                             Param (..))
+import           Web.Pinboard.Client.Util   (encodeParams, paramsToByteString, toText)
 
 --------------------------------------------------------------------------------
 
@@ -108,7 +109,7 @@ pinboardJson req = do
   result <- liftIO (sendPinboardRequestBS reqJson config conn)
   handleResultBS (debug config) result
   where
-    reqJson =  req { queryParams = ("format", "json") : queryParams req }
+    reqJson =  req { queryParams = Format "json" : queryParams req }
     handleDecodeError dbg resultBS msg = do
       when dbg $ liftIO $ print (eitherDecodeStrict resultBS :: Either String Value)
       left $ PinboardError ParseFailure (T.pack msg) Nothing Nothing Nothing 
@@ -139,7 +140,7 @@ sendPinboardRequest
       -> (Response -> InputStream S.ByteString -> IO a)
       -> IO a
 sendPinboardRequest PinboardRequest{..} PinboardConfig{..} conn handler = do
-   let url = S.concat [ T.encodeUtf8 endpoint , "?" , paramsToByteString $ ("auth_token", apiToken) : queryParams ]
+   let url = S.concat [ T.encodeUtf8 path , "?" , paramsToByteString $ ("auth_token", apiToken) : encodeParams queryParams ]
    req <- buildReq url
    sendRequest conn req emptyBody
    receiveResponse conn handler

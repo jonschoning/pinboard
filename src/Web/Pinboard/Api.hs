@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -------------------------------------------
 -- |
 -- Module      : Web.Pinboard.Api
@@ -13,15 +14,15 @@ module Web.Pinboard.Api
     ( 
       Tag,
       Count,
-      getPostsRecent
+      getPostsRecent,
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
-import           Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..))
-import           Web.Pinboard.Client.Util     (toText, getParams)
+import           Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
 import           Web.Pinboard.ApiTypes         
 import           Control.Applicative          ((<$>))
 import           Data.Text                    (Text, intercalate)
+import           Data.Maybe                   (catMaybes)
                                             
 ------------------------------------------------------------------------------
                                             
@@ -36,6 +37,6 @@ getPostsRecent
 getPostsRecent tags count = pinboardJson (PinboardRequest url params)
   where 
     url = "posts/recent" 
-    params = getParams 
-          [ ("tag", intercalate "," <$> tags)
-          , ("count", toText <$> count) ]
+    params = catMaybes [ Tag . intercalate "+" <$> tags
+                       , Count <$> count ]
+

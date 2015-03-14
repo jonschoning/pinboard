@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 -- |
 -- Module      : Web.Pinboard.Client.Types
 -- Copyright   : (c) Jon Schoning, 2015
@@ -9,29 +10,28 @@ module Web.Pinboard.Client.Types
   ( Pinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
-  , mkParams
-  , mkConfig
+  , Param (..)
+  , ParamsBS
   ) where
 
-import           Control.Monad.Reader       (ReaderT)
-import           Control.Monad.Trans.Either (EitherT)
-import           Data.ByteString            (ByteString)
-import           Data.Text                  (Text)
-import           Network.Http.Client        (Connection)
-import           Web.Pinboard.Client.Error    (PinboardError (..))
-import Data.Monoid(mempty)
+import Control.Monad.Reader       (ReaderT)
+import Control.Monad.Trans.Either (EitherT)
+import Data.ByteString            (ByteString)
+import Data.Data                  (Data)
+import Data.Text                  (Text)
+import Data.Typeable              (Typeable)
+import Network.Http.Client        (Connection)
+import Web.Pinboard.Client.Error  (PinboardError (..))
 
 ------------------------------------------------------------------------------
 
 type Pinboard = EitherT PinboardError (ReaderT (PinboardConfig, Connection) IO)
 
 ------------------------------------------------------------------------------
-type Params = [(ByteString, ByteString)]
 
-------------------------------------------------------------------------------
 data PinboardRequest = PinboardRequest
-    { endpoint    :: Text   -- ^ Endpoint of PinboardRequest
-    , queryParams :: Params -- ^ Query Parameters of PinboardRequest
+    { path    :: Text   -- ^ url path of PinboardRequest
+    , queryParams :: [Param] -- ^ Query Parameters of PinboardRequest
     } deriving Show
 
 ------------------------------------------------------------------------------
@@ -42,8 +42,12 @@ data PinboardConfig = PinboardConfig
 
 ------------------------------------------------------------------------------
 
-mkParams :: Params
-mkParams = mempty
+type ParamsBS = [(ByteString, ByteString)]
 
-mkConfig :: PinboardConfig
-mkConfig = PinboardConfig { debug = False, apiToken = mempty }
+------------------------------------------------------------------------------
+
+data Param = Format Text
+           | Tag Text
+           | Count Int
+      deriving (Show, Eq, Data, Typeable)
+

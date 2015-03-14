@@ -16,7 +16,7 @@ library
   hs-source-dirs:      src
   build-depends:       HsOpenSSL
                      , aeson
-                     , base >=4.6 && <4.8
+                     , base >=4.6
                      , bytestring
                      , either
                      , http-streams
