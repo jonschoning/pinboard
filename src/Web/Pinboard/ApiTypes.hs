@@ -13,10 +13,9 @@ import           Control.Applicative        ((<$>), (<*>))
 import           Data.Aeson                 (FromJSON (parseJSON), Value (String, Object), (.:))
 import           Data.Text                  (Text, words, unpack)
 import           Data.Time                  (UTCTime)
-import Data.HashMap.Strict(toList)
+import Data.HashMap.Strict(member, toList)
 import Data.Time.Format(readTime)
 import System.Locale(defaultTimeLocale)
--- import Data.Map.Strict(Map)
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -85,4 +84,17 @@ data Date = Date {
       dateDate         :: UTCTime
     , dateCount        :: Int
     } deriving (Show, Eq)
+
+
+data Suggested = Popular [Text]
+               | Recommended [Text]
+    deriving (Show, Eq)
+
+instance FromJSON Suggested where
+   parseJSON (Object o)
+     | member "popular" o = Popular <$> (o .: "popular")
+     | member "recommended" o = Recommended  <$> (o .: "recommended")
+     | otherwise = error "bad parse"  
+   parseJSON _ = error "bad parse"
+
 

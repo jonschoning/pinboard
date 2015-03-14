@@ -30,8 +30,8 @@ type Pinboard = EitherT PinboardError (ReaderT (PinboardConfig, Connection) IO)
 ------------------------------------------------------------------------------
 
 data PinboardRequest = PinboardRequest
-    { path    :: Text   -- ^ url path of PinboardRequest
-    , queryParams :: [Param] -- ^ Query Parameters of PinboardRequest
+    { requestPath    :: Text   -- ^ url path of PinboardRequest
+    , requestParams :: [Param] -- ^ Query Parameters of PinboardRequest
     } deriving Show
 
 ------------------------------------------------------------------------------
@@ -49,5 +49,6 @@ type ParamsBS = [(ByteString, ByteString)]
 data Param = Format Text
            | Tag Text
            | Count Int
+           | Url Text
       deriving (Show, Eq, Data, Typeable)
 

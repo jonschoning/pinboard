@@ -72,6 +72,7 @@ paramToText :: Param -> Text
 paramToText (Tag a) = a
 paramToText (Format a) = a
 paramToText (Count a) = toText a
+paramToText (Url a) = a
 
 paramToName :: Param -> Text
 paramToName = toTextLower . toConstr

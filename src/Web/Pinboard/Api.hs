@@ -13,9 +13,11 @@
 module Web.Pinboard.Api
     ( 
       Tag,
+      Url,
       Count,
       getPostsRecent,
       getPostsDates,
+      getSuggested,
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
@@ -28,6 +30,7 @@ import           Data.Maybe                   (catMaybes)
 ------------------------------------------------------------------------------
                                             
 type Tag = Text
+type Url = Text
 type Count = Int
 
 -- | Returns a list of the user's most recent posts, filtered by tag.
@@ -35,9 +38,9 @@ getPostsRecent
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Count -- ^ number of results to return. Default is 15, max is 100  
   -> Pinboard Posts
-getPostsRecent tags count = pinboardJson (PinboardRequest url params)
+getPostsRecent tags count = pinboardJson (PinboardRequest path params)
   where 
-    url = "posts/recent" 
+    path = "posts/recent" 
     params = catMaybes [ Tag . intercalate "+" <$> tags
                        , Count <$> count ]
 
@@ -45,8 +48,18 @@ getPostsRecent tags count = pinboardJson (PinboardRequest url params)
 getPostsDates
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Pinboard Dates
-getPostsDates tags = pinboardJson (PinboardRequest url params)
+getPostsDates tags = pinboardJson (PinboardRequest path params)
   where 
-    url = "posts/dates" 
+    path = "posts/dates" 
     params = catMaybes [ Tag . intercalate "+" <$> tags ]
 
+-- | Returns a list of popular tags and recommended tags for a given URL. 
+-- Popular tags are tags used site-wide for the url; 
+-- Recommended tags are drawn from the user's own tags.
+getSuggested
+  :: Url
+  -> Pinboard [Suggested]
+getSuggested url = pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/suggest" 
+    params = [ Url url ]
