@@ -18,6 +18,7 @@ module Web.Pinboard.Api
       getPostsRecent,
       getPostsDates,
       getSuggested,
+      getTags,
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
@@ -63,3 +64,11 @@ getSuggested url = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/suggest" 
     params = [ Url url ]
+
+-- | Returns a full list of the user's tags along with the number of 
+-- times they were used.
+getTags :: Pinboard TagMap
+getTags = unJsonTagMap <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "tags/get" 
+    params = []

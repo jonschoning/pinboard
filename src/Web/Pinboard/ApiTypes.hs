@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -8,14 +9,16 @@
 -- Portability : POSIX
 module Web.Pinboard.ApiTypes where
 
-import           Prelude hiding(words)
-import           Control.Applicative        ((<$>), (<*>))
-import           Data.Aeson                 (FromJSON (parseJSON), Value (String, Object), (.:))
-import           Data.Text                  (Text, words, unpack)
-import           Data.Time                  (UTCTime)
-import Data.HashMap.Strict(member, toList)
-import Data.Time.Format(readTime)
-import System.Locale(defaultTimeLocale)
+import Prelude hiding                      (words)
+import Control.Applicative                 (( <$>), ( <*>))
+import Data.Aeson                          (FromJSON (parseJSON), Value (String, Object), ( .:))
+import Data.HashMap.Strict                 (HashMap, member, toList)
+import Data.Monoid                         (mempty)
+import Data.Text                           (Text, words, unpack)
+import Data.Time                           (UTCTime)
+import Data.Time.Format                    (readTime)
+import System.Locale                       (defaultTimeLocale)
+import qualified Data.HashMap.Strict as HM
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -70,15 +73,16 @@ instance FromJSON Dates where
        Dates <$> o .: "user"
              <*> o .: "tag"
              <*> (toDates <$> o .: "dates")
+               where
+                toDates :: Value -> [Date]
+                toDates (Object o')= do
+                   (dateStr, String countStr) <- toList o'
+                   return $ Date 
+                             (readTime defaultTimeLocale "%F" (unpack dateStr)) -- UTCTime
+                             (read (unpack countStr))                           -- Int
+                toDates _ = mempty
    parseJSON _ = error "bad parse"
 
-toDates :: Value -> [Date]
-toDates (Object o)= do
-   (dateStr, String countStr) <- toList o
-   return $ Date 
-             (readTime defaultTimeLocale "%F" (unpack dateStr)) -- UTCTime
-             (read (unpack countStr))                           -- Int
-toDates _ = []
 
 data Date = Date {
       dateDate         :: UTCTime
@@ -97,4 +101,13 @@ instance FromJSON Suggested where
      | otherwise = error "bad parse"  
    parseJSON _ = error "bad parse"
 
+type TagMap = HashMap Text Int
+
+newtype JsonTagMap = JsonTagMap {unJsonTagMap :: TagMap}
+    deriving (Show, Eq)
+
+instance FromJSON JsonTagMap where
+  parseJSON = return . toTags
+    where toTags (Object o) = JsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
+          toTags _ = error "bad parse"
 
