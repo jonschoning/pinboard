@@ -17,6 +17,7 @@ module Web.Pinboard.Api
       New,
       Url,
       Count,
+      getPosts,
       getPostsRecent,
       getPostsDates,
       getPostsUpdate,
@@ -35,6 +36,7 @@ import Data.Text                    (Text, unwords)
 import Data.Time                    (UTCTime)
 import Data.Maybe                   (catMaybes)
 import Web.Pinboard.ApiTypes        
+import Data.Time.Calendar(Day)
                                             
 ------------------------------------------------------------------------------
                                             
@@ -46,6 +48,7 @@ type New = Tag
 
 -- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
+
 
 type Count = Int
 
@@ -61,16 +64,32 @@ getPostsRecent tags count = pinboardJson (PinboardRequest path params)
     path = "posts/recent" 
     params = catMaybes [ Tag . unwords <$> tags
                        , Count <$> count ]
+                       --
+-- | Returns one or more posts on a single day matching the arguments. 
+-- If no date or url is given, date of most recent bookmark will be used.
+getPosts
+  :: Maybe [Tag] -- ^ filter by up to three tags
+  -> Maybe Day -- ^ return results bookmarked on this day
+  -> Maybe Url -- ^ return bookmark for this URL
+  -> Pinboard Posts
+getPosts tags date url = pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/get" 
+    params = catMaybes [ Tag . unwords <$> tags
+                       , Date <$> date
+                       , Url <$> url ]
 
 -- | Returns a list of dates with the number of posts at each date.
 getPostsDates
   :: Maybe [Tag] -- ^ filter by up to three tags
-  -> Pinboard Dates
+  -> Pinboard PostDates
 getPostsDates tags = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/dates" 
     params = catMaybes [ Tag . unwords <$> tags ]
 
+-- | Returns the most recent time a bookmark was added, updated or deleted.
+-- Use this before calling posts/all to see if the data has changed since the last fetch.
 getPostsUpdate :: Pinboard UTCTime
 getPostsUpdate = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
   where 

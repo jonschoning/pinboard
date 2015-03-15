@@ -10,16 +10,14 @@
 module Web.Pinboard.ApiTypes where
 
 import Prelude hiding                      (words)
-import Control.Applicative                 ((<$>), (<*>))
+import Control.Applicative                 ((<$>), (<*>), (<|>))
 import Data.Aeson                          (FromJSON (parseJSON), Value (String, Object), ( .:))
+import Data.Aeson.Types                    (Parser)
 import Data.HashMap.Strict                 (HashMap, member, toList)
 import Data.Text                           (Text, words, unpack)
 import Data.Time                           (UTCTime)
-import Data.Time.Format                    (readTime)
-import System.Locale                       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
-import Control.Applicative((<|>))
-import Data.Aeson.Types(Parser)
+import Data.Time.Calendar(Day)
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -63,33 +61,26 @@ boolFromYesNo :: Text -> Bool
 boolFromYesNo "yes" = True
 boolFromYesNo _     = False
 
-data Dates = Dates {
-      datesUser         :: Text
-    , datesTag          :: Text
-    , dates             :: [Date]
+data PostDates = PostDates {
+      postDatesUser     :: Text
+    , postDatesTag      :: Text
+    , postDatesCount    :: [DateCount]
     } deriving (Show, Eq)
 
-instance FromJSON Dates where
+instance FromJSON PostDates where
    parseJSON (Object o) =
-       Dates <$> o .: "user"
-             <*> o .: "tag"
-             <*> (parseDates <$> o .: "dates")
-               where
-                parseDates :: Value -> [Date]
-                parseDates (Object o')= do
-                   (dateStr, String countStr) <- toList o'
-                   return $ Date 
-                             (readTime defaultTimeLocale "%F" (unpack dateStr)) -- UTCTime
-                             (read (unpack countStr))                           -- Int
-                parseDates _ = []
+     PostDates <$> o .: "user"
+               <*> o .: "tag"
+               <*> (parseDates <$> o .: "dates")
+     where
+       parseDates :: Value -> [DateCount]
+       parseDates (Object o')= do
+          (dateStr, String countStr) <- toList o'
+          return (read (unpack dateStr), read (unpack countStr))
+       parseDates _ = []
    parseJSON _ = error "bad parse"
 
-
-data Date = Date {
-      dateDate         :: UTCTime
-    , dateCount        :: Int
-    } deriving (Show, Eq)
-
+type DateCount = (Day, Int)
 
 data Suggested = Popular [Text]
                | Recommended [Text]

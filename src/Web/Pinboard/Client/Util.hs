@@ -24,7 +24,6 @@ import           Data.ByteString       (ByteString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
-import           Data.Data (toConstr)
 import           Web.Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
 import Network.HTTP.Types(urlEncode)
 
@@ -67,20 +66,23 @@ paramsToByteString ((x,y) : xs) =
 encodeParams :: [Param] -> ParamsBS
 encodeParams xs = do 
   x <- xs 
-  return ( (T.encodeUtf8 . paramToName) x
-         , (urlEncode True . T.encodeUtf8 . paramToText) x
+  let (k, v) = paramToText x
+  return ( T.encodeUtf8 k
+         , (urlEncode True . T.encodeUtf8 ) v
          )
 
-paramToText :: Param -> Text
-paramToText (Tag a) = a
-paramToText (Old a) = a
-paramToText (New a) = a
-paramToText (Format a) = a
-paramToText (Count a) = toText a
-paramToText (Url a) = a
+paramToText :: Param -> (Text, Text)
+paramToText (Tag a)    = ("tag", a)
+paramToText (Old a)    = ("old", a)
+paramToText (New a)    = ("new", a)
+paramToText (Format a) = ("format", a)
+paramToText (Count a)  = ("count", toText a)
+paramToText (Url a)    = ("url", a)
+paramToText (Date a)    = ("dt", toText a)
+paramToText (DateTime a)= ("dt", toText a)
 
 paramToName :: Param -> Text
-paramToName = toTextLower . toConstr
+paramToName = fst . paramToText
 ------------------------------------------------------------------------------
 -- | Forward slash interspersion on `Monoid` and `IsString`
 -- constrained types

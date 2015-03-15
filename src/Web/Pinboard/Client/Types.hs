@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveDataTypeable #-}
+
 -- |
 -- Module      : Web.Pinboard.Client.Types
 -- Copyright   : (c) Jon Schoning, 2015
@@ -17,11 +17,11 @@ module Web.Pinboard.Client.Types
 import Control.Monad.Reader       (ReaderT)
 import Control.Monad.Trans.Either (EitherT)
 import Data.ByteString            (ByteString)
-import Data.Data                  (Data)
 import Data.Text                  (Text)
-import Data.Typeable              (Typeable)
 import Network.Http.Client        (Connection)
 import Web.Pinboard.Client.Error  (PinboardError (..))
+import Data.Time.Calendar(Day)
+import Data.Time.Clock(UTCTime)
 
 ------------------------------------------------------------------------------
 
@@ -52,5 +52,7 @@ data Param = Format Text
            | New Text
            | Count Int
            | Url Text
-      deriving (Show, Eq, Data, Typeable)
+           | Date Day
+           | DateTime UTCTime
+      deriving (Show, Eq)
 
