@@ -52,13 +52,18 @@ data Param = Format Text
            | Old Text
            | New Text
            | Count Int
+           | Start Int
+           | Results Int
            | Url Text
            | Date Day
            | DateTime UTCTime
+           | FromDateTime UTCTime
+           | ToDateTime UTCTime
            | Replace Bool
            | Shared Bool
            | ToRead Bool
            | Description Text
            | Extended Text
+           | Meta Int
       deriving (Show, Eq)
 

@@ -12,25 +12,31 @@
 
 module Web.Pinboard.Api
     ( 
+      Url,
+      Description,
+      Extended,
       Tag,
       Old,
       New,
-      Url,
       Count,
       Shared,
       Replace,
       ToRead,
       Date,
       DateTime,
-      Description,
-      Extended,
-      getPosts,
+      StartOffset,
+      NumResults,
+      FromDateTime,
+      ToDateTime,
+      Meta,
       getPostsRecent,
+      getPostsAll,
+      getPostsOnDate,
       getPostsDates,
-      getPostsUpdate,
-      deletePost,
+      getPostsMRUTime,
       addPost,
-      getSuggested,
+      deletePost,
+      getSuggestedTags,
       getTags,
       deleteTag,
       renameTag
@@ -48,32 +54,8 @@ import Data.Time.Calendar(Day)
                                             
 ------------------------------------------------------------------------------
 
--- | up to 255 characters. May not contain commas or whitespace.
-type Tag = Text 
-
-type Old = Tag
-
-type New = Tag
-
 -- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
-
-type Count = Int
-
--- | the literal string 'yes' or 'no'
-type Shared = Bool
-
--- | the literal string 'yes' or 'no'
-type Replace = Bool
-
--- | the literal string 'yes' or 'no'
-type ToRead = Bool
-
--- | UTC date in this format: 2010-12-11. Same range as datetime above
-type Date = Day
-
--- | UTC timestamp in this format: 2010-12-11T19:48:02Z. Valid date range is Jan 1, 1 AD to January 1, 2100 (but see note below about future timestamps).
-type DateTime = UTCTime
 
 -- | up to 255 characters long
 type Description = Text 
@@ -81,6 +63,28 @@ type Description = Text
 -- | up to 65536 characters long. Any URLs will be auto-linkified when displayed.
 type Extended = Text
 
+-- | up to 255 characters. May not contain commas or whitespace.
+type Tag = Text 
+type Old = Tag
+type New = Tag
+
+type Count = Int
+type NumResults = Int
+type StartOffset = Int
+
+type Shared = Bool
+type Replace = Bool
+type ToRead = Bool
+
+-- | UTC date in this format: 2010-12-11. Same range as datetime above
+type Date = Day
+
+-- | UTC timestamp in this format: 2010-12-11T19:48:02Z. Valid date range is Jan 1, 1 AD to January 1, 2100 (but see note below about future timestamps).
+type DateTime = UTCTime
+type FromDateTime = DateTime
+type ToDateTime = DateTime
+
+type Meta = Int
 ------------------------------------------------------------------------------
 
 -- | Returns a list of the user's most recent posts, filtered by tag.
@@ -94,15 +98,35 @@ getPostsRecent tags count = pinboardJson (PinboardRequest path params)
     params = catMaybes [ Tag . unwords <$> tags
                        , Count <$> count ]
 
+-- | Returns all bookmarks in the user's account.
+getPostsAll
+  :: Maybe [Tag] -- ^ filter by up to three tags
+  -> Maybe StartOffset -- ^ offset value (default is 0)
+  -> Maybe NumResults -- ^ number of results to return. Default is all
+  -> Maybe FromDateTime -- ^ return only bookmarks created after this time
+  -> Maybe ToDateTime -- ^ return only bookmarks created before this time
+  -> Maybe Meta -- ^ include a change detection signature for each bookmark
+  -> Pinboard Posts
+getPostsAll tags start results fromdt todt meta = 
+  pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/all" 
+    params = catMaybes [ Tag . unwords <$> tags
+                       , Start <$> start
+                       , Results <$> results
+                       , FromDateTime <$> fromdt
+                       , ToDateTime <$> todt
+                       , Meta <$> meta
+                       ]
 
 -- | Returns one or more posts on a single day matching the arguments. 
 -- If no date or url is given, date of most recent bookmark will be used.
-getPosts
+getPostsOnDate
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Date -- ^ return results bookmarked on this day
   -> Maybe Url -- ^ return bookmark for this URL
   -> Pinboard Posts
-getPosts tags date url = pinboardJson (PinboardRequest path params)
+getPostsOnDate tags date url = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/get" 
     params = catMaybes [ Tag . unwords <$> tags
@@ -121,9 +145,8 @@ getPostsDates tags = pinboardJson (PinboardRequest path params)
 
 
 -- | Returns the most recent time a bookmark was added, updated or deleted.
--- Use this before calling posts/all to see if the data has changed since the last fetch.
-getPostsUpdate :: Pinboard UTCTime
-getPostsUpdate = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
+getPostsMRUTime :: Pinboard UTCTime
+getPostsMRUTime = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
   where 
     path = "posts/update" 
     params = []
@@ -167,14 +190,13 @@ addPost url descr ext tags ctime repl shared toread =
 ------------------------------------------------------------------------------
 
 
--- | Delete an existing bookmark.
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
 -- Recommended tags are drawn from the user's own tags.
-getSuggested
+getSuggestedTags
   :: Url
   -> Pinboard [Suggested]
-getSuggested url = pinboardJson (PinboardRequest path params)
+getSuggestedTags url = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/suggest" 
     params = [ Url url ]
