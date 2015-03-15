@@ -38,6 +38,7 @@ import           Network.Http.Client        (Connection, Method (GET),
                                              openConnectionSSL,
                                              receiveResponse, sendRequest,
                                              setHeader, emptyBody, Response)
+import Network.HTTP.Types(urlEncode)
 import           OpenSSL                    (withOpenSSL)
 import           System.IO.Streams          (InputStream)
 import           Web.Pinboard.Client.Error  (PinboardError (..),
@@ -48,7 +49,7 @@ import           Web.Pinboard.Client.Types  (Pinboard,
                                              PinboardConfig (..),
                                              PinboardRequest (..),
                                              Param (..))
-import           Web.Pinboard.Client.Util   (encodeParams, paramsToByteString, toText)
+import           Web.Pinboard.Client.Util    (encodeParams, paramsToByteString, toText)
 
 --------------------------------------------------------------------------------
 
@@ -140,7 +141,9 @@ sendPinboardRequest
       -> (Response -> InputStream S.ByteString -> IO a)
       -> IO a
 sendPinboardRequest PinboardRequest{..} PinboardConfig{..} conn handler = do
-   let url = S.concat [ T.encodeUtf8 requestPath , "?" , paramsToByteString $ ("auth_token", apiToken) : encodeParams requestParams ]
+   let url = S.concat [ T.encodeUtf8 requestPath 
+                      , "?" 
+                      , paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq url
    sendRequest conn req emptyBody
    receiveResponse conn handler

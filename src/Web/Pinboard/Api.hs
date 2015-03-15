@@ -25,12 +25,13 @@ module Web.Pinboard.Api
       renameTag
     ) where
 
-import           Web.Pinboard.Client.Internal (pinboardJson)
-import           Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
-import           Web.Pinboard.ApiTypes         
-import           Control.Applicative          ((<$>))
-import           Data.Text                    (Text, intercalate)
-import           Data.Maybe                   (catMaybes)
+import Prelude hiding (unwords)
+import Web.Pinboard.Client.Internal (pinboardJson)
+import Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
+import Control.Applicative          ((<$>))
+import Data.Text                    (Text, unwords)
+import Data.Maybe                   (catMaybes)
+import Web.Pinboard.ApiTypes        
                                             
 ------------------------------------------------------------------------------
                                             
@@ -53,7 +54,7 @@ getPostsRecent
 getPostsRecent tags count = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/recent" 
-    params = catMaybes [ Tag . intercalate "+" <$> tags
+    params = catMaybes [ Tag . unwords <$> tags
                        , Count <$> count ]
 
 -- | Returns a list of dates with the number of posts at each date.
@@ -63,7 +64,7 @@ getPostsDates
 getPostsDates tags = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/dates" 
-    params = catMaybes [ Tag . intercalate "+" <$> tags ]
+    params = catMaybes [ Tag . unwords <$> tags ]
 
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 

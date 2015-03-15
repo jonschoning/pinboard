@@ -26,6 +26,7 @@ import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
 import           Data.Data (toConstr)
 import           Web.Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
+import Network.HTTP.Types(urlEncode)
 
 ------------------------------------------------------------------------------
 
@@ -66,7 +67,9 @@ paramsToByteString ((x,y) : xs) =
 encodeParams :: [Param] -> ParamsBS
 encodeParams xs = do 
   x <- xs 
-  return ((T.encodeUtf8 . paramToName) x, (T.encodeUtf8 . paramToText) x)
+  return ( (T.encodeUtf8 . paramToName) x
+         , (urlEncode True . T.encodeUtf8 . paramToText) x
+         )
 
 paramToText :: Param -> Text
 paramToText (Tag a) = a
