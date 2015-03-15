@@ -31,25 +31,6 @@ module Pinboard.Api
       -- ** Notes
       getNoteList,
       getNote,
-      -- ** Aliases
-      Url,
-      Description,
-      Extended,
-      Tag,
-      Old,
-      New,
-      Count,
-      Shared,
-      Replace,
-      ToRead,
-      Date,
-      DateTime,
-      StartOffset,
-      NumResults,
-      FromDateTime,
-      ToDateTime,
-      Meta,
-      NoteId
     ) where
 
 import Prelude hiding (unwords)
@@ -61,7 +42,6 @@ import Data.Text                (Text, unwords)
 import Data.Time                (UTCTime)
 import Data.Maybe               (catMaybes)
 import Pinboard.ApiTypes        
-import Data.Time.Calendar(Day)
                                             
 -- POSTS ---------------------------------------------------------------------
 
@@ -226,7 +206,7 @@ getUserApiToken = fromTextResult <$> pinboardJson (PinboardRequest path params)
 
 -- NOTES ---------------------------------------------------------------------
 
--- | notes/list : Returns a list of the user's notes
+-- | notes/list : Returns a list of the user's notes (note text detail is not included)
 getNoteList :: Pinboard NoteList
 getNoteList = pinboardJson (PinboardRequest path params)
   where 
@@ -241,40 +221,4 @@ getNote noteid = pinboardJson (PinboardRequest path params)
   where 
     path = "notes" </> noteid
     params = []
-
--- ALIASES -------------------------------------------------------------------
-
--- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
-type Url = Text
-
--- | up to 255 characters long
-type Description = Text 
-
--- | up to 65536 characters long. Any URLs will be auto-linkified when displayed.
-type Extended = Text
-
--- | up to 255 characters. May not contain commas or whitespace.
-type Tag = Text 
-type Old = Tag
-type New = Tag
-
-type Count = Int
-type NumResults = Int
-type StartOffset = Int
-
-type Shared = Bool
-type Replace = Bool
-type ToRead = Bool
-
--- | UTC date in this format: 2010-12-11. Same range as datetime above
-type Date = Day
-
--- | UTC timestamp in this format: 2010-12-11T19:48:02Z. Valid date range is Jan 1, 1 AD to January 1, 2100 (but see note below about future timestamps).
-type DateTime = UTCTime
-type FromDateTime = DateTime
-type ToDateTime = DateTime
-
-type Meta = Int
-
-type NoteId = Text
 

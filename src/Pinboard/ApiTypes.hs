@@ -22,7 +22,7 @@ import System.Locale       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
 
 
--- Posts -------------------------------------------------------------------
+-- * Posts
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -88,7 +88,7 @@ instance FromJSON PostDates where
 type DateCount = (Day, Int)
 
 
--- Notes -------------------------------------------------------------------
+-- * Notes
 
 data NoteList = NoteList {
       noteListCount     :: Int
@@ -147,7 +147,7 @@ readNoteTime :: String -> UTCTime
 readNoteTime = readTime defaultTimeLocale "%F %T"
 
 
--- Tags -------------------------------------------------------------------
+-- * Tags
 
 type TagMap = HashMap Text Int
 
@@ -172,7 +172,7 @@ instance FromJSON Suggested where
    parseJSON _ = error "bad parse"
 
 
--- Scalars -------------------------------------------------------------------
+-- * Scalars
 
 newtype DoneResult = ToDoneResult {fromDoneResult :: ()}
     deriving (Show, Eq)
@@ -198,4 +198,40 @@ newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
 instance FromJSON UpdateTime where
   parseJSON (Object o) = ToUpdateTime <$> (o .: "update_time")
   parseJSON _ = error "bad parse"
+
+-- * Aliases
+
+-- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
+type Url = Text
+
+-- | up to 255 characters long
+type Description = Text 
+
+-- | up to 65536 characters long. Any URLs will be auto-linkified when displayed.
+type Extended = Text
+
+-- | up to 255 characters. May not contain commas or whitespace.
+type Tag = Text 
+type Old = Tag
+type New = Tag
+
+type Count = Int
+type NumResults = Int
+type StartOffset = Int
+
+type Shared = Bool
+type Replace = Bool
+type ToRead = Bool
+
+-- | UTC date in this format: 2010-12-11. Same range as datetime above
+type Date = Day
+
+-- | UTC timestamp in this format: 2010-12-11T19:48:02Z. Valid date range is Jan 1, 1 AD to January 1, 2100 (but see note below about future timestamps).
+type DateTime = UTCTime
+type FromDateTime = DateTime
+type ToDateTime = DateTime
+
+type Meta = Int
+
+type NoteId = Text
 

@@ -11,10 +11,28 @@ bug-reports:         https://github.com/jonschoning/pinboard/issues
 category:            Network APIs
 build-type:          Simple
 cabal-version:       >=1.10
-Description:    
+Description:         
+    .
+    The Pinboard API is a way to interact programatically with
+    your bookmarks, notes and other Pinboard data. This
+    library wraps the API exposing functions and data
+   kstructures suitable for usage in Haskell programs.
+    .
+    Example:
+    .
+    > import Pinboard
+    > 
+    > main :: IO ()
+    > main = do
+    >   let config = fromApiToken "api token"
+    >   result <- runPinboardJson config $ getPostsRecent Nothing Nothing
+    >   case result of
+    >     Right details -> print details
+    >     Left pinboardError -> print pinboardError
+    .
 library 
   hs-source-dirs:      src
-  build-depends:       base >=4.6
+  build-depends:       base >=4.6 && < 5.0
                      , aeson
                      , bytestring
                      , containers
@@ -42,7 +60,7 @@ library
                        Pinboard.Client.Error
                        Pinboard.Client.Types
                        Pinboard.Client.Util
-  ghc-options:         -Wall -O2 -rtsopts
+  ghc-options:         -Wall -rtsopts
 
 source-repository head
   type:     git

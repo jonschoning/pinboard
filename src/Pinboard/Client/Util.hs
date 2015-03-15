@@ -8,7 +8,6 @@
 module Pinboard.Client.Util
     ( 
       mkConfig
-    , fromApiToken
     , paramsToByteString
     , toText
     , toTextLower
@@ -20,7 +19,6 @@ module Pinboard.Client.Util
 
 import           Data.Monoid           (Monoid, mconcat, mempty, (<>))
 import           Data.String           (IsString)
-import           Data.ByteString       (ByteString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
@@ -31,9 +29,6 @@ import Network.HTTP.Types(urlEncode)
 
 mkConfig :: PinboardConfig
 mkConfig = PinboardConfig { debug = False, apiToken = mempty }
-
-fromApiToken :: ByteString -> PinboardConfig
-fromApiToken token = PinboardConfig { debug = False, apiToken = token }
 
 ------------------------------------------------------------------------------
 -- | Conversion from a `Show` constrained type to `Text`
