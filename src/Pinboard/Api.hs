@@ -18,13 +18,13 @@ module Pinboard.Api
       getPostsAll,
       getPostsDates,
       getPostsMRUTime,
+      getSuggestedTags,
       addPost,
       deletePost,
       -- ** Tags
       getTags,
       renameTag,
       deleteTag,
-      getSuggestedTags,
       -- ** User
       getUserSecretRssKey,
       getUserApiToken,
@@ -49,6 +49,7 @@ module Pinboard.Api
       FromDateTime,
       ToDateTime,
       Meta,
+      NoteId
     ) where
 
 import Prelude hiding (unwords)
@@ -64,7 +65,7 @@ import Data.Time.Calendar(Day)
                                             
 -- POSTS ---------------------------------------------------------------------
 
--- | Returns a list of the user's most recent posts, filtered by tag.
+-- | posts/recent : Returns a list of the user's most recent posts, filtered by tag.
 getPostsRecent 
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Count -- ^ number of results to return. Default is 15, max is 100  
@@ -75,7 +76,7 @@ getPostsRecent tags count = pinboardJson (PinboardRequest path params)
     params = catMaybes [ Tag . unwords <$> tags
                        , Count <$> count ]
 
--- | Returns all bookmarks in the user's account.
+-- | posts/all : Returns all bookmarks in the user's account.
 getPostsAll
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe StartOffset -- ^ offset value (default is 0)
@@ -96,7 +97,7 @@ getPostsAll tags start results fromdt todt meta =
                        , Meta <$> meta
                        ]
 
--- | Returns one or more posts on a single day matching the arguments. 
+-- | posts/get : Returns one or more posts on a single day matching the arguments. 
 -- If no date or url is given, date of most recent bookmark will be used.
 getPostsForDate
   :: Maybe [Tag] -- ^ filter by up to three tags
@@ -111,7 +112,7 @@ getPostsForDate tags date url = pinboardJson (PinboardRequest path params)
                        , Url <$> url ]
 
 
--- | Returns a list of dates with the number of posts at each date.
+-- | posts/dates : Returns a list of dates with the number of posts at each date.
 getPostsDates
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Pinboard PostDates
@@ -121,15 +122,25 @@ getPostsDates tags = pinboardJson (PinboardRequest path params)
     params = catMaybes [ Tag . unwords <$> tags ]
 
 
--- | Returns the most recent time a bookmark was added, updated or deleted.
+-- | posts/update : Returns the most recent time a bookmark was added, updated or deleted.
 getPostsMRUTime :: Pinboard UTCTime
 getPostsMRUTime = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
   where 
     path = "posts/update" 
     params = []
 
+-- | posts/suggest : Returns a list of popular tags and recommended tags for a given URL. 
+-- Popular tags are tags used site-wide for the url; 
+-- Recommended tags are drawn from the user's own tags.
+getSuggestedTags
+  :: Url
+  -> Pinboard [Suggested]
+getSuggestedTags url = pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/suggest" 
+    params = [ Url url ]
 
--- | Delete an existing bookmark.
+-- | posts/delete : Delete an existing bookmark.
 deletePost 
   :: Url
   -> Pinboard ()
@@ -139,7 +150,7 @@ deletePost url = fromDoneResult <$> pinboardJson (PinboardRequest path params)
     params = [Url url]
 
 
--- | Add a bookmark
+-- | posts/add : Add a bookmark
 addPost
   :: Url            -- ^ the URL of the item
   -> Description    -- ^ Title of the item. This field is unfortunately named 'description' for backwards compatibility with the delicious API
@@ -163,22 +174,10 @@ addPost url descr ext tags ctime repl shared toread =
                        , Shared <$> shared
                        , ToRead <$> toread ]
 
-
 -- TAGS ----------------------------------------------------------------------
 
--- | Returns a list of popular tags and recommended tags for a given URL. 
--- Popular tags are tags used site-wide for the url; 
--- Recommended tags are drawn from the user's own tags.
-getSuggestedTags
-  :: Url
-  -> Pinboard [Suggested]
-getSuggestedTags url = pinboardJson (PinboardRequest path params)
-  where 
-    path = "posts/suggest" 
-    params = [ Url url ]
 
-
--- | Returns a full list of the user's tags along with the number of 
+-- | tags/get : Returns a full list of the user's tags along with the number of 
 -- times they were used.
 getTags :: Pinboard TagMap
 getTags = fromJsonTagMap <$> pinboardJson (PinboardRequest path params)
@@ -187,7 +186,7 @@ getTags = fromJsonTagMap <$> pinboardJson (PinboardRequest path params)
     params = []
 
 
--- | Delete an existing tag.
+-- | tags/delete : Delete an existing tag.
 deleteTag 
   :: Tag 
   -> Pinboard ()
@@ -197,7 +196,7 @@ deleteTag tag = fromDoneResult <$> pinboardJson (PinboardRequest path params)
     params = [Tag tag]
 
 
--- | Rename an tag, or fold it in to an existing tag
+-- | tags/rename : Rename an tag, or fold it in to an existing tag
 renameTag 
   :: Old -- ^ note: match is not case sensitive
   -> New -- ^ if empty, nothing will happen
@@ -210,14 +209,14 @@ renameTag old new = fromDoneResult <$> pinboardJson (PinboardRequest path params
 
 -- USER ----------------------------------------------------------------------
 
--- | Returns the user's secret RSS key (for viewing private feeds)
+-- | user/secret : Returns the user's secret RSS key (for viewing private feeds)
 getUserSecretRssKey :: Pinboard Text
 getUserSecretRssKey = fromTextResult <$> pinboardJson (PinboardRequest path params)
   where 
     path = "user/secret" 
     params = []
 
--- | Returns the user's API token (for making API calls without a password)
+-- | user/api_token : Returns the user's API token (for making API calls without a password)
 getUserApiToken :: Pinboard Text
 getUserApiToken = fromTextResult <$> pinboardJson (PinboardRequest path params)
   where 
@@ -227,13 +226,14 @@ getUserApiToken = fromTextResult <$> pinboardJson (PinboardRequest path params)
 
 -- NOTES ---------------------------------------------------------------------
 
--- | Returns a list of the user's notes
+-- | notes/list : Returns a list of the user's notes
 getNoteList :: Pinboard NoteList
 getNoteList = pinboardJson (PinboardRequest path params)
   where 
     path = "notes/list" 
     params = []
 
+-- | notes/id : Returns an individual user note. The hash property is a 20 character long sha1 hash of the note text.
 getNote 
   :: NoteId
   -> Pinboard Note

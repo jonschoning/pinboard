@@ -5,7 +5,7 @@
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
--- 
+
 
 module Pinboard (
       module Pinboard.Client 
