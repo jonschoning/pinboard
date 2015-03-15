@@ -40,7 +40,8 @@ module Web.Pinboard.Api
       getTags,
       deleteTag,
       renameTag,
-      getUserSecretRssKey
+      getUserSecretRssKey,
+      getUserApiToken
     ) where
 
 import Prelude hiding (unwords)
@@ -242,5 +243,13 @@ getUserSecretRssKey = fromTextResult <$> pinboardJson (PinboardRequest path para
   where 
     path = "user/secret" 
     params = []
+
+-- | Returns the user's API token (for making API calls without a password)
+getUserApiToken :: Pinboard Text
+getUserApiToken = fromTextResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "user/api_token" 
+    params = []
+
 
 
