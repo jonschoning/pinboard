@@ -10,10 +10,9 @@
 module Web.Pinboard.ApiTypes where
 
 import Prelude hiding                      (words)
-import Control.Applicative                 (( <$>), ( <*>))
+import Control.Applicative                 ((<$>), (<*>))
 import Data.Aeson                          (FromJSON (parseJSON), Value (String, Object), ( .:))
 import Data.HashMap.Strict                 (HashMap, member, toList)
-import Data.Monoid                         (mempty)
 import Data.Text                           (Text, words, unpack)
 import Data.Time                           (UTCTime)
 import Data.Time.Format                    (readTime)
@@ -72,15 +71,15 @@ instance FromJSON Dates where
    parseJSON (Object o) =
        Dates <$> o .: "user"
              <*> o .: "tag"
-             <*> (toDates <$> o .: "dates")
+             <*> (parseDates <$> o .: "dates")
                where
-                toDates :: Value -> [Date]
-                toDates (Object o')= do
+                parseDates :: Value -> [Date]
+                parseDates (Object o')= do
                    (dateStr, String countStr) <- toList o'
                    return $ Date 
                              (readTime defaultTimeLocale "%F" (unpack dateStr)) -- UTCTime
                              (read (unpack countStr))                           -- Int
-                toDates _ = mempty
+                parseDates _ = []
    parseJSON _ = error "bad parse"
 
 
@@ -103,11 +102,22 @@ instance FromJSON Suggested where
 
 type TagMap = HashMap Text Int
 
-newtype JsonTagMap = JsonTagMap {unJsonTagMap :: TagMap}
+newtype JsonTagMap = ToJsonTagMap {fromJsonTagMap :: TagMap}
     deriving (Show, Eq)
 
 instance FromJSON JsonTagMap where
   parseJSON = return . toTags
-    where toTags (Object o) = JsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
+    where toTags (Object o) = ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
           toTags _ = error "bad parse"
+
+newtype DoneResult = ToDoneResult {fromDoneResult :: ()}
+    deriving (Show, Eq)
+
+instance FromJSON DoneResult where
+  parseJSON (Object o) = ToDoneResult <$> (parseDone <$> o .: "result")
+    where
+      parseDone :: Text -> ()
+      parseDone "done" = ()
+      parseDone _ = error "bad DoneResult"
+  parseJSON _ = error "bad parse"
 

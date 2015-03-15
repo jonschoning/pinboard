@@ -19,6 +19,7 @@ module Web.Pinboard.Api
       getPostsDates,
       getSuggested,
       getTags,
+      deleteTag
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
@@ -30,8 +31,13 @@ import           Data.Maybe                   (catMaybes)
                                             
 ------------------------------------------------------------------------------
                                             
-type Tag = Text
+
+-- | up to 255 characters. May not contain commas or whitespace.
+type Tag = Text 
+
+-- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
+
 type Count = Int
 
 -- | Returns a list of the user's most recent posts, filtered by tag.
@@ -68,7 +74,23 @@ getSuggested url = pinboardJson (PinboardRequest path params)
 -- | Returns a full list of the user's tags along with the number of 
 -- times they were used.
 getTags :: Pinboard TagMap
-getTags = unJsonTagMap <$> pinboardJson (PinboardRequest path params)
+getTags = fromJsonTagMap <$> pinboardJson (PinboardRequest path params)
   where 
     path = "tags/get" 
     params = []
+
+-- | Delete an existing tag.
+deleteTag 
+  :: Tag 
+  -> Pinboard ()
+deleteTag tag = fromDoneResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "tags/delete" 
+    params = [Tag tag]
+
+
+
+
+
+
+
