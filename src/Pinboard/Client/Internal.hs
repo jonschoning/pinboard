@@ -125,6 +125,7 @@ pinboardJson req = do
                       402 -> pinboardError RequestFailed
                       403 -> pinboardError Forbidden
                       404 -> pinboardError NotFound
+                      429 -> pinboardError TooManyRequests
                       500 -> pinboardError PinboardServerError
                       502 -> pinboardError PinboardServerError
                       503 -> pinboardError PinboardServerError

@@ -21,36 +21,6 @@ import Data.Time.Format    (readTime)
 import System.Locale       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
 
--- Notes -------------------------------------------------------------------
-data NoteList = NoteList {
-      noteListCount     :: Int
-    , noteListItems     :: [NoteListItem]
-    } deriving (Show, Eq)
-
-instance FromJSON NoteList where
-   parseJSON (Object o) =
-       NoteList <$> o .: "count"
-                <*> o .: "notes"
-   parseJSON _ = error "bad parse"
-
-data NoteListItem = NoteListItem {
-      noteListItemId     :: Text
-    , noteListItemHash   :: Text
-    , noteListItemTitle  :: Text
-    , noteListItemLength :: Int
-    , noteListItemCreatedAt :: UTCTime
-    , noteListItemUpdatedAt :: UTCTime
-    } deriving (Show, Eq)
-
-instance FromJSON NoteListItem where
-   parseJSON (Object o) =
-       NoteListItem <$> o .: "id"
-                    <*> o .: "hash"
-                    <*> o .: "title"
-                    <*> (read <$> (o .: "length"))
-                    <*> (readTime defaultTimeLocale "%F %T" <$> o .: "created_at")
-                    <*> (readTime defaultTimeLocale "%F %T" <$> o .: "updated_at")
-   parseJSON _ = error "bad parse"
 
 -- Posts -------------------------------------------------------------------
 
@@ -118,6 +88,64 @@ instance FromJSON PostDates where
 type DateCount = (Day, Int)
 
 
+-- Notes -------------------------------------------------------------------
+
+data NoteList = NoteList {
+      noteListCount     :: Int
+    , noteListItems     :: [NoteListItem]
+    } deriving (Show, Eq)
+
+instance FromJSON NoteList where
+   parseJSON (Object o) =
+       NoteList <$> o .: "count"
+                <*> o .: "notes"
+   parseJSON _ = error "bad parse"
+
+data NoteListItem = NoteListItem {
+      noteListItemId     :: Text
+    , noteListItemHash   :: Text
+    , noteListItemTitle  :: Text
+    , noteListItemLength :: Int
+    , noteListItemCreatedAt :: UTCTime
+    , noteListItemUpdatedAt :: UTCTime
+    } deriving (Show, Eq)
+
+instance FromJSON NoteListItem where
+   parseJSON (Object o) =
+       NoteListItem <$> o .: "id"
+                    <*> o .: "hash"
+                    <*> o .: "title"
+                    <*> (read <$> (o .: "length"))
+                    <*> (readNoteTime <$> o .: "created_at")
+                    <*> (readNoteTime <$> o .: "updated_at")
+   parseJSON _ = error "bad parse"
+
+
+
+data Note = Note {
+      noteId     :: Text
+    , noteHash   :: Text
+    , noteTitle  :: Text
+    , noteText   :: Text
+    , noteLength :: Int
+    , noteCreatedAt :: UTCTime
+    , noteUpdatedAt :: UTCTime
+    } deriving (Show, Eq)
+
+instance FromJSON Note where
+   parseJSON (Object o) =
+       Note <$> o .: "id"
+            <*> o .: "hash"
+            <*> o .: "title"
+            <*> o .: "text"
+            <*> o .: "length"
+            <*> (readNoteTime <$> o .: "created_at")
+            <*> (readNoteTime <$> o .: "updated_at")
+   parseJSON _ = error "bad parse"
+
+readNoteTime :: String -> UTCTime
+readNoteTime = readTime defaultTimeLocale "%F %T"
+
 
 -- Tags -------------------------------------------------------------------
 
@@ -142,6 +170,7 @@ instance FromJSON Suggested where
      | member "recommended" o = Recommended  <$> (o .: "recommended")
      | otherwise = error "bad parse"  
    parseJSON _ = error "bad parse"
+
 
 -- Scalars -------------------------------------------------------------------
 

@@ -30,6 +30,7 @@ module Pinboard.Api
       getUserApiToken,
       -- ** Notes
       getNoteList,
+      getNote,
       -- ** Aliases
       Url,
       Description,
@@ -53,10 +54,11 @@ module Pinboard.Api
 import Prelude hiding (unwords)
 import Pinboard.Client.Internal (pinboardJson)
 import Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
-import Control.Applicative          ((<$>))
-import Data.Text                    (Text, unwords)
-import Data.Time                    (UTCTime)
-import Data.Maybe                   (catMaybes)
+import Pinboard.Client.Util     ((</>))
+import Control.Applicative      ((<$>))
+import Data.Text                (Text, unwords)
+import Data.Time                (UTCTime)
+import Data.Maybe               (catMaybes)
 import Pinboard.ApiTypes        
 import Data.Time.Calendar(Day)
                                             
@@ -232,6 +234,13 @@ getNoteList = pinboardJson (PinboardRequest path params)
     path = "notes/list" 
     params = []
 
+getNote 
+  :: NoteId
+  -> Pinboard Note
+getNote noteid = pinboardJson (PinboardRequest path params)
+  where 
+    path = "notes" </> noteid
+    params = []
 
 -- ALIASES -------------------------------------------------------------------
 
@@ -266,4 +275,6 @@ type FromDateTime = DateTime
 type ToDateTime = DateTime
 
 type Meta = Int
+
+type NoteId = Text
 

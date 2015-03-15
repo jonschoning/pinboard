@@ -23,6 +23,7 @@ data PinboardErrorHTTPCode =
         | RequestFailed     -- ^ 402
         | Forbidden         -- ^ 403
         | NotFound          -- ^ 404
+        | TooManyRequests   -- ^ 429
         | PinboardServerError -- ^ (>=500)
         | UnknownHTTPCode   -- ^ All other codes
           deriving Show
