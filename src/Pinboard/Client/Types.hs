@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      : Web.Pinboard.Client.Types
+-- Module      : Pinboard.Client.Types
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Web.Pinboard.Client.Types
+module Pinboard.Client.Types
   ( Pinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
@@ -19,7 +19,7 @@ import Control.Monad.Trans.Either (EitherT)
 import Data.ByteString            (ByteString)
 import Data.Text                  (Text)
 import Network.Http.Client        (Connection)
-import Web.Pinboard.Client.Error  (PinboardError (..))
+import Pinboard.Client.Error  (PinboardError (..))
 import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
 

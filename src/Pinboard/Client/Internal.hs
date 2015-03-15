@@ -2,14 +2,14 @@
 {-# LANGUAGE RecordWildCards   #-}
 ------------------------------------------------------------------------------
 -- | 
--- Module      : Web.Pinboard.Client.Internal
+-- Module      : Pinboard.Client.Internal
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
 ------------------------------------------------------------------------------
 
-module Web.Pinboard.Client.Internal
+module Pinboard.Client.Internal
     ( 
       runPinboardSingleRaw
     , runPinboardSingleRawBS
@@ -41,15 +41,15 @@ import           Network.Http.Client        (Connection, Method (GET),
 import Network.HTTP.Types(urlEncode)
 import           OpenSSL                    (withOpenSSL)
 import           System.IO.Streams          (InputStream)
-import           Web.Pinboard.Client.Error  (PinboardError (..),
+import           Pinboard.Client.Error  (PinboardError (..),
                                              PinboardErrorHTTPCode (..),
                                              PinboardErrorType (..),
                                              defaultPinboardError)
-import           Web.Pinboard.Client.Types  (Pinboard,
+import           Pinboard.Client.Types  (Pinboard,
                                              PinboardConfig (..),
                                              PinboardRequest (..),
                                              Param (..))
-import           Web.Pinboard.Client.Util    (encodeParams, paramsToByteString, toText)
+import           Pinboard.Client.Util    (encodeParams, paramsToByteString, toText)
 
 --------------------------------------------------------------------------------
 

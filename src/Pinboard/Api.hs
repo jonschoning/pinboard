@@ -2,7 +2,7 @@
 
 -------------------------------------------
 -- |
--- Module      : Web.Pinboard.Api
+-- Module      : Pinboard.Api
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
@@ -10,8 +10,25 @@
 --
 -- < https://pinboard.in/api/ >
 
-module Web.Pinboard.Api
+module Pinboard.Api
     ( 
+      -- ** Posts
+      getPostsRecent,
+      getPostsForDate,
+      getPostsAll,
+      getPostsDates,
+      getPostsMRUTime,
+      addPost,
+      deletePost,
+      -- ** Tags
+      getTags,
+      renameTag,
+      deleteTag,
+      getSuggestedTags,
+      -- ** User
+      getUserSecretRssKey,
+      getUserApiToken,
+      -- ** Aliases
       Url,
       Description,
       Extended,
@@ -29,32 +46,19 @@ module Web.Pinboard.Api
       FromDateTime,
       ToDateTime,
       Meta,
-      getPostsRecent,
-      getPostsAll,
-      getPostsForDate,
-      getPostsDates,
-      getPostsMRUTime,
-      addPost,
-      deletePost,
-      getSuggestedTags,
-      getTags,
-      deleteTag,
-      renameTag,
-      getUserSecretRssKey,
-      getUserApiToken
     ) where
 
 import Prelude hiding (unwords)
-import Web.Pinboard.Client.Internal (pinboardJson)
-import Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
+import Pinboard.Client.Internal (pinboardJson)
+import Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
 import Control.Applicative          ((<$>))
 import Data.Text                    (Text, unwords)
 import Data.Time                    (UTCTime)
 import Data.Maybe                   (catMaybes)
-import Web.Pinboard.ApiTypes        
+import Pinboard.ApiTypes        
 import Data.Time.Calendar(Day)
                                             
-------------------------------------------------------------------------------
+-- ALIASES -------------------------------------------------------------------
 
 -- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
@@ -87,7 +91,8 @@ type FromDateTime = DateTime
 type ToDateTime = DateTime
 
 type Meta = Int
-------------------------------------------------------------------------------
+
+-- POSTS ---------------------------------------------------------------------
 
 -- | Returns a list of the user's most recent posts, filtered by tag.
 getPostsRecent 
@@ -189,8 +194,7 @@ addPost url descr ext tags ctime repl shared toread =
                        , ToRead <$> toread ]
 
 
-------------------------------------------------------------------------------
-
+-- TAGS ----------------------------------------------------------------------
 
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
@@ -234,8 +238,7 @@ renameTag old new = fromDoneResult <$> pinboardJson (PinboardRequest path params
     params = [Old old, New new]
 
 
-------------------------------------------------------------------------------
-
+-- USER ----------------------------------------------------------------------
 
 -- | Returns the user's secret RSS key (for viewing private feeds)
 getUserSecretRssKey :: Pinboard Text
@@ -252,4 +255,4 @@ getUserApiToken = fromTextResult <$> pinboardJson (PinboardRequest path params)
     params = []
 
 
-
+-- NOTES ---------------------------------------------------------------------

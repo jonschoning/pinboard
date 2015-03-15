@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- |
--- Module      : Web.Pinboard.Client.Util
+-- Module      : Pinboard.Client.Util
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Web.Pinboard.Client.Util
+module Pinboard.Client.Util
     ( 
       mkConfig
     , fromApiToken
@@ -24,7 +24,7 @@ import           Data.ByteString       (ByteString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
-import           Web.Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
+import           Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
 import Network.HTTP.Types(urlEncode)
 
 ------------------------------------------------------------------------------

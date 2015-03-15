@@ -2,12 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      : Web.Pinboard.Types
+-- Module      : Pinboard.Types
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Web.Pinboard.ApiTypes where
+module Pinboard.ApiTypes where
 
 import Prelude hiding                      (words)
 import Control.Applicative                 ((<$>), (<*>), (<|>))
