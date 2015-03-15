@@ -19,6 +19,7 @@ module Web.Pinboard.Api
       Count,
       getPostsRecent,
       getPostsDates,
+      deletePost,
       getSuggested,
       getTags,
       deleteTag,
@@ -65,6 +66,15 @@ getPostsDates tags = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/dates" 
     params = catMaybes [ Tag . unwords <$> tags ]
+
+-- | Delete an existing bookmark.
+deletePost 
+  :: Url
+  -> Pinboard ()
+deletePost url = fromDoneResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/delete" 
+    params = [Url url]
 
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
