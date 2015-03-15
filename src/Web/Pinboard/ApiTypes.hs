@@ -114,6 +114,13 @@ instance FromJSON DoneResult where
       parseDone msg = ( fail . unpack ) msg
   parseJSON _ = error "bad parse"
 
+newtype TextResult = ToTextResult {fromTextResult :: Text}
+    deriving (Show, Eq)
+
+instance FromJSON TextResult where
+  parseJSON (Object o) = ToTextResult <$> (o .: "result")
+  parseJSON _ = error "bad parse"
+
 newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
     deriving (Show, Eq)
 

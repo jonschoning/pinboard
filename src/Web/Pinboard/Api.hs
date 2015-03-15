@@ -31,7 +31,7 @@ module Web.Pinboard.Api
       Meta,
       getPostsRecent,
       getPostsAll,
-      getPostsOnDate,
+      getPostsForDate,
       getPostsDates,
       getPostsMRUTime,
       addPost,
@@ -39,7 +39,8 @@ module Web.Pinboard.Api
       getSuggestedTags,
       getTags,
       deleteTag,
-      renameTag
+      renameTag,
+      getUserSecretRssKey
     ) where
 
 import Prelude hiding (unwords)
@@ -121,12 +122,12 @@ getPostsAll tags start results fromdt todt meta =
 
 -- | Returns one or more posts on a single day matching the arguments. 
 -- If no date or url is given, date of most recent bookmark will be used.
-getPostsOnDate
+getPostsForDate
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Date -- ^ return results bookmarked on this day
   -> Maybe Url -- ^ return bookmark for this URL
   -> Pinboard Posts
-getPostsOnDate tags date url = pinboardJson (PinboardRequest path params)
+getPostsForDate tags date url = pinboardJson (PinboardRequest path params)
   where 
     path = "posts/get" 
     params = catMaybes [ Tag . unwords <$> tags
@@ -230,4 +231,16 @@ renameTag old new = fromDoneResult <$> pinboardJson (PinboardRequest path params
   where 
     path = "tags/rename" 
     params = [Old old, New new]
+
+
+------------------------------------------------------------------------------
+
+
+-- | Returns the user's secret RSS key (for viewing private feeds)
+getUserSecretRssKey :: Pinboard Text
+getUserSecretRssKey = fromTextResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "user/secret" 
+    params = []
+
 
