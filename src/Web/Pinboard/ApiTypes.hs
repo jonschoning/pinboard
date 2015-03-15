@@ -18,6 +18,8 @@ import Data.Time                           (UTCTime)
 import Data.Time.Format                    (readTime)
 import System.Locale                       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
+import Control.Applicative((<|>))
+import Data.Aeson.Types(Parser)
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -114,10 +116,10 @@ newtype DoneResult = ToDoneResult {fromDoneResult :: ()}
     deriving (Show, Eq)
 
 instance FromJSON DoneResult where
-  parseJSON (Object o) = ToDoneResult <$> (parseDone <$> o .: "result")
+  parseJSON (Object o) = parseDone =<< (o .: "result" <|> o .: "result_code")
     where
-      parseDone :: Text -> ()
-      parseDone "done" = ()
-      parseDone _ = error "bad DoneResult"
+      parseDone :: Text -> Parser DoneResult
+      parseDone "done" = return $ ToDoneResult ()
+      parseDone msg = ( fail . unpack ) msg
   parseJSON _ = error "bad parse"
 
