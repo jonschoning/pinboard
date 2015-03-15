@@ -72,14 +72,20 @@ encodeParams xs = do
          )
 
 paramToText :: Param -> (Text, Text)
-paramToText (Tag a)    = ("tag", a)
-paramToText (Old a)    = ("old", a)
-paramToText (New a)    = ("new", a)
-paramToText (Format a) = ("format", a)
-paramToText (Count a)  = ("count", toText a)
-paramToText (Url a)    = ("url", a)
-paramToText (Date a)    = ("dt", toText a)
-paramToText (DateTime a)= ("dt", toText a)
+paramToText (Tag a)      = ("tag", a)
+paramToText (Tags a)     = ("tags", a)
+paramToText (Old a)      = ("old", a)
+paramToText (New a)      = ("new", a)
+paramToText (Format a)   = ("format", a)
+paramToText (Count a)    = ("count", toText a)
+paramToText (Url a)      = ("url", a)
+paramToText (Date a)     = ("dt", toText a)
+paramToText (DateTime a) = ("dt", toText a)
+paramToText (Replace a)  = ("replace", if a then "yes" else "no")
+paramToText (Shared a)   = ("shared", if a then "yes" else "no")
+paramToText (ToRead a)   = ("toread", if a then "yes" else "no")
+paramToText (Description a) = ("description", a)
+paramToText (Extended a) = ("extended", a)
 
 paramToName :: Param -> Text
 paramToName = fst . paramToText

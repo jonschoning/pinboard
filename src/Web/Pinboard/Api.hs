@@ -17,11 +17,19 @@ module Web.Pinboard.Api
       New,
       Url,
       Count,
+      Shared,
+      Replace,
+      ToRead,
+      Date,
+      DateTime,
+      Description,
+      Extended,
       getPosts,
       getPostsRecent,
       getPostsDates,
       getPostsUpdate,
       deletePost,
+      addPost,
       getSuggested,
       getTags,
       deleteTag,
@@ -39,18 +47,39 @@ import Web.Pinboard.ApiTypes
 import Data.Time.Calendar(Day)
                                             
 ------------------------------------------------------------------------------
-                                            
 
 -- | up to 255 characters. May not contain commas or whitespace.
 type Tag = Text 
+
 type Old = Tag
+
 type New = Tag
 
 -- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
 
-
 type Count = Int
+
+-- | the literal string 'yes' or 'no'
+type Shared = Bool
+
+-- | the literal string 'yes' or 'no'
+type Replace = Bool
+
+-- | the literal string 'yes' or 'no'
+type ToRead = Bool
+
+-- | UTC date in this format: 2010-12-11. Same range as datetime above
+type Date = Day
+
+-- | UTC timestamp in this format: 2010-12-11T19:48:02Z. Valid date range is Jan 1, 1 AD to January 1, 2100 (but see note below about future timestamps).
+type DateTime = UTCTime
+
+-- | up to 255 characters long
+type Description = Text 
+
+-- | up to 65536 characters long. Any URLs will be auto-linkified when displayed.
+type Extended = Text
 
 ------------------------------------------------------------------------------
 
@@ -64,12 +93,13 @@ getPostsRecent tags count = pinboardJson (PinboardRequest path params)
     path = "posts/recent" 
     params = catMaybes [ Tag . unwords <$> tags
                        , Count <$> count ]
-                       --
+
+
 -- | Returns one or more posts on a single day matching the arguments. 
 -- If no date or url is given, date of most recent bookmark will be used.
 getPosts
   :: Maybe [Tag] -- ^ filter by up to three tags
-  -> Maybe Day -- ^ return results bookmarked on this day
+  -> Maybe Date -- ^ return results bookmarked on this day
   -> Maybe Url -- ^ return bookmark for this URL
   -> Pinboard Posts
 getPosts tags date url = pinboardJson (PinboardRequest path params)
@@ -78,6 +108,7 @@ getPosts tags date url = pinboardJson (PinboardRequest path params)
     params = catMaybes [ Tag . unwords <$> tags
                        , Date <$> date
                        , Url <$> url ]
+
 
 -- | Returns a list of dates with the number of posts at each date.
 getPostsDates
@@ -88,6 +119,7 @@ getPostsDates tags = pinboardJson (PinboardRequest path params)
     path = "posts/dates" 
     params = catMaybes [ Tag . unwords <$> tags ]
 
+
 -- | Returns the most recent time a bookmark was added, updated or deleted.
 -- Use this before calling posts/all to see if the data has changed since the last fetch.
 getPostsUpdate :: Pinboard UTCTime
@@ -95,6 +127,7 @@ getPostsUpdate = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
   where 
     path = "posts/update" 
     params = []
+
 
 -- | Delete an existing bookmark.
 deletePost 
@@ -105,9 +138,36 @@ deletePost url = fromDoneResult <$> pinboardJson (PinboardRequest path params)
     path = "posts/delete" 
     params = [Url url]
 
--- | Delete an existing bookmark.
+
+-- | Add a bookmark
+addPost
+  :: Url            -- ^ the URL of the item
+  -> Description    -- ^ Title of the item. This field is unfortunately named 'description' for backwards compatibility with the delicious API
+  -> Maybe Extended -- ^ Description of the item. Called 'extended' for backwards compatibility with delicious API
+  -> Maybe [Tag]    -- ^ List of up to 100 tags
+  -> Maybe DateTime -- ^ creation time for this bookmark. Defaults to current time. Datestamps more than 10 minutes ahead of server time will be reset to current server time
+  -> Maybe Replace  -- ^ Replace any existing bookmark with this URL. Default is yes. If set to no, will throw an error if bookmark exists
+  -> Maybe Shared   -- ^ Make bookmark public. Default is "yes" unless user has enabled the "save all bookmarks as private" user setting, in which case default is "no"
+  -> Maybe ToRead   -- ^ Marks the bookmark as unread. Default is "no"
+  -> Pinboard ()
+addPost url descr ext tags ctime repl shared toread = 
+  fromDoneResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/add" 
+    params = catMaybes [ Just $ Url url
+                       , Just $ Description descr
+                       , Extended <$> ext
+                       , Tags . unwords <$> tags
+                       , DateTime <$> ctime
+                       , Replace <$> repl
+                       , Shared <$> shared
+                       , ToRead <$> toread ]
+
+
 ------------------------------------------------------------------------------
 
+
+-- | Delete an existing bookmark.
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
 -- Recommended tags are drawn from the user's own tags.
@@ -119,6 +179,7 @@ getSuggested url = pinboardJson (PinboardRequest path params)
     path = "posts/suggest" 
     params = [ Url url ]
 
+
 -- | Returns a full list of the user's tags along with the number of 
 -- times they were used.
 getTags :: Pinboard TagMap
@@ -126,6 +187,7 @@ getTags = fromJsonTagMap <$> pinboardJson (PinboardRequest path params)
   where 
     path = "tags/get" 
     params = []
+
 
 -- | Delete an existing tag.
 deleteTag 

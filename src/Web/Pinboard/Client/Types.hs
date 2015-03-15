@@ -48,11 +48,17 @@ type ParamsBS = [(ByteString, ByteString)]
 
 data Param = Format Text
            | Tag Text
+           | Tags Text
            | Old Text
            | New Text
            | Count Int
            | Url Text
            | Date Day
            | DateTime UTCTime
+           | Replace Bool
+           | Shared Bool
+           | ToRead Bool
+           | Description Text
+           | Extended Text
       deriving (Show, Eq)
 
