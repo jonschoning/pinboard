@@ -70,6 +70,8 @@ encodeParams xs = do
 
 paramToText :: Param -> Text
 paramToText (Tag a) = a
+paramToText (Old a) = a
+paramToText (New a) = a
 paramToText (Format a) = a
 paramToText (Count a) = toText a
 paramToText (Url a) = a

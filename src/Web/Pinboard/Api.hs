@@ -13,13 +13,16 @@
 module Web.Pinboard.Api
     ( 
       Tag,
+      Old,
+      New,
       Url,
       Count,
       getPostsRecent,
       getPostsDates,
       getSuggested,
       getTags,
-      deleteTag
+      deleteTag,
+      renameTag
     ) where
 
 import           Web.Pinboard.Client.Internal (pinboardJson)
@@ -34,6 +37,8 @@ import           Data.Maybe                   (catMaybes)
 
 -- | up to 255 characters. May not contain commas or whitespace.
 type Tag = Text 
+type Old = Tag
+type New = Tag
 
 -- | as defined by RFC 3986. Allowed schemes are http, https, javascript, mailto, ftp and file. The Safari-specific feed scheme is allowed but will be treated as a synonym for http.
 type Url = Text
@@ -89,8 +94,13 @@ deleteTag tag = fromDoneResult <$> pinboardJson (PinboardRequest path params)
     params = [Tag tag]
 
 
-
-
-
-
+-- | Rename an tag, or fold it in to an existing tag
+renameTag 
+  :: Old -- ^ note: match is not case sensitive
+  -> New -- ^ if empty, nothing will happen
+  -> Pinboard ()
+renameTag old new = fromDoneResult <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "tags/rename" 
+    params = [Old old, New new]
 

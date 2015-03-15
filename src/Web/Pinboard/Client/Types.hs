@@ -48,6 +48,8 @@ type ParamsBS = [(ByteString, ByteString)]
 
 data Param = Format Text
            | Tag Text
+           | Old Text
+           | New Text
            | Count Int
            | Url Text
       deriving (Show, Eq, Data, Typeable)
