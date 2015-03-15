@@ -9,15 +9,50 @@
 -- Portability : POSIX
 module Pinboard.ApiTypes where
 
-import Prelude hiding                      (words)
-import Control.Applicative                 ((<$>), (<*>), (<|>))
-import Data.Aeson                          (FromJSON (parseJSON), Value (String, Object), ( .:))
-import Data.Aeson.Types                    (Parser)
-import Data.HashMap.Strict                 (HashMap, member, toList)
-import Data.Text                           (Text, words, unpack)
-import Data.Time                           (UTCTime)
+import Prelude hiding      (words)
+import Control.Applicative ((<$>), (<*>), (<|>))
+import Data.Aeson          (FromJSON (parseJSON), Value (String, Object), ( .:))
+import Data.Aeson.Types    (Parser)
+import Data.HashMap.Strict (HashMap, member, toList)
+import Data.Text           (Text, words, unpack)
+import Data.Time           (UTCTime)
+import Data.Time.Calendar  (Day)
+import Data.Time.Format    (readTime)
+import System.Locale       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
-import Data.Time.Calendar(Day)
+
+-- Notes -------------------------------------------------------------------
+data NoteList = NoteList {
+      noteListCount     :: Int
+    , noteListItems     :: [NoteListItem]
+    } deriving (Show, Eq)
+
+instance FromJSON NoteList where
+   parseJSON (Object o) =
+       NoteList <$> o .: "count"
+                <*> o .: "notes"
+   parseJSON _ = error "bad parse"
+
+data NoteListItem = NoteListItem {
+      noteListItemId     :: Text
+    , noteListItemHash   :: Text
+    , noteListItemTitle  :: Text
+    , noteListItemLength :: Int
+    , noteListItemCreatedAt :: UTCTime
+    , noteListItemUpdatedAt :: UTCTime
+    } deriving (Show, Eq)
+
+instance FromJSON NoteListItem where
+   parseJSON (Object o) =
+       NoteListItem <$> o .: "id"
+                    <*> o .: "hash"
+                    <*> o .: "title"
+                    <*> (read <$> (o .: "length"))
+                    <*> (readTime defaultTimeLocale "%F %T" <$> o .: "created_at")
+                    <*> (readTime defaultTimeLocale "%F %T" <$> o .: "updated_at")
+   parseJSON _ = error "bad parse"
+
+-- Posts -------------------------------------------------------------------
 
 data Posts = Posts {
       postsDate         :: UTCTime
@@ -82,6 +117,21 @@ instance FromJSON PostDates where
 
 type DateCount = (Day, Int)
 
+
+
+-- Tags -------------------------------------------------------------------
+
+type TagMap = HashMap Text Int
+
+newtype JsonTagMap = ToJsonTagMap {fromJsonTagMap :: TagMap}
+    deriving (Show, Eq)
+
+instance FromJSON JsonTagMap where
+  parseJSON = return . toTags
+    where toTags (Object o) = ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
+          toTags _ = error "bad parse"
+
+
 data Suggested = Popular [Text]
                | Recommended [Text]
     deriving (Show, Eq)
@@ -93,15 +143,7 @@ instance FromJSON Suggested where
      | otherwise = error "bad parse"  
    parseJSON _ = error "bad parse"
 
-type TagMap = HashMap Text Int
-
-newtype JsonTagMap = ToJsonTagMap {fromJsonTagMap :: TagMap}
-    deriving (Show, Eq)
-
-instance FromJSON JsonTagMap where
-  parseJSON = return . toTags
-    where toTags (Object o) = ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
-          toTags _ = error "bad parse"
+-- Scalars -------------------------------------------------------------------
 
 newtype DoneResult = ToDoneResult {fromDoneResult :: ()}
     deriving (Show, Eq)
