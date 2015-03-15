@@ -16,7 +16,7 @@ Description:
     The Pinboard API is a way to interact programatically with
     your bookmarks, notes and other Pinboard data. This
     library wraps the API exposing functions and data
-   kstructures suitable for usage in Haskell programs.
+    structures suitable for usage in Haskell programs.
     .
     Example:
     .
