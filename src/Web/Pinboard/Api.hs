@@ -19,6 +19,7 @@ module Web.Pinboard.Api
       Count,
       getPostsRecent,
       getPostsDates,
+      getPostsUpdate,
       deletePost,
       getSuggested,
       getTags,
@@ -31,6 +32,7 @@ import Web.Pinboard.Client.Internal (pinboardJson)
 import Web.Pinboard.Client.Types    (Pinboard, PinboardRequest (..), Param (..))
 import Control.Applicative          ((<$>))
 import Data.Text                    (Text, unwords)
+import Data.Time                    (UTCTime)
 import Data.Maybe                   (catMaybes)
 import Web.Pinboard.ApiTypes        
                                             
@@ -46,6 +48,8 @@ type New = Tag
 type Url = Text
 
 type Count = Int
+
+------------------------------------------------------------------------------
 
 -- | Returns a list of the user's most recent posts, filtered by tag.
 getPostsRecent 
@@ -67,6 +71,12 @@ getPostsDates tags = pinboardJson (PinboardRequest path params)
     path = "posts/dates" 
     params = catMaybes [ Tag . unwords <$> tags ]
 
+getPostsUpdate :: Pinboard UTCTime
+getPostsUpdate = fromUpdateTime <$> pinboardJson (PinboardRequest path params)
+  where 
+    path = "posts/update" 
+    params = []
+
 -- | Delete an existing bookmark.
 deletePost 
   :: Url
@@ -75,6 +85,9 @@ deletePost url = fromDoneResult <$> pinboardJson (PinboardRequest path params)
   where 
     path = "posts/delete" 
     params = [Url url]
+
+-- | Delete an existing bookmark.
+------------------------------------------------------------------------------
 
 -- | Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 

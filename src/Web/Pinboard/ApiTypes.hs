@@ -123,3 +123,10 @@ instance FromJSON DoneResult where
       parseDone msg = ( fail . unpack ) msg
   parseJSON _ = error "bad parse"
 
+newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
+    deriving (Show, Eq)
+
+instance FromJSON UpdateTime where
+  parseJSON (Object o) = ToUpdateTime <$> (o .: "update_time")
+  parseJSON _ = error "bad parse"
+
