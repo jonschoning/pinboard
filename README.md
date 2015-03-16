@@ -8,10 +8,16 @@ structures suitable for usage in Haskell programs.
 ## Hackage page and Haddock documentation
 <http://hackage.haskell.org/package/pinboard>
 
+## Pinboard Api documentation
+
+<https://pinboard.in/api/>
 
 ## Examples: 
 
-``` haskell
+### getPostsRecent
+``` {.haskell}
+{-# LANGUAGE OverloadedStrings #-}
+
 import Pinboard
 
 main :: IO ()
