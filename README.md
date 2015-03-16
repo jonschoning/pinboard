@@ -1,9 +1,15 @@
+# Pinboard [![Hackage](https://img.shields.io/hackage/v/pinboard.svg?style=flat)](https://hackage.haskell.org/package/pinboard)
+
 The Pinboard API is a way to interact programatically with
 your bookmarks, notes and other Pinboard data. This
 library wraps the API exposing functions and data
 structures suitable for usage in Haskell programs.
 
-Example:
+## Hackage page and Haddock documentation
+<http://hackage.haskell.org/package/pinboard>
+
+
+## Examples: 
 
 ``` haskell
 import Pinboard
