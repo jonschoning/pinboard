@@ -11,12 +11,21 @@
 
 module Pinboard.Client.Internal
     ( 
-      runPinboardSingleRaw
+      -- * Monadic
+      pinboardJson
+    , runPinboardJson
+      -- * Single
+    , runPinboardSingleRaw
     , runPinboardSingleRawBS
     , runPinboardSingleJson
-    , runPinboardJson
-    , pinboardJson
+      -- * Sending
+    , sendPinboardRequest
     , sendPinboardRequestBS
+      -- * Connections
+    , connOpenRaw
+    , connOpen
+    , connClose
+    , connFail
     ) where
 
 
@@ -53,56 +62,6 @@ import           Pinboard.Client.Util    (encodeParams, paramsToByteString, toTe
 
 --------------------------------------------------------------------------------
 
-runPinboardJson
-    :: FromJSON a
-    => PinboardConfig
-    -> Pinboard a
-    -> IO (Either PinboardError a)
-runPinboardJson config requests = withOpenSSL $
-  bracket connOpen connClose (either (connFail ConnectionFailure) go)
-  where go conn = runReaderT (runEitherT requests) (config, conn) 
-                  `catch` connFail UnknownErrorType
-
-runPinboardSingleRaw
-    :: PinboardConfig       
-    -> PinboardRequest
-    -> (Response -> InputStream S.ByteString -> IO a)
-    -> IO (Either PinboardError a)
-runPinboardSingleRaw config req handler = withOpenSSL $ 
-  bracket connOpen connClose (either (connFail ConnectionFailure) go)
-    where go conn = (Right <$> sendPinboardRequest req config conn handler)
-                    `catch` connFail UnknownErrorType 
-
-runPinboardSingleRawBS
-    :: PinboardConfig       
-    -> PinboardRequest
-    -> IO (Either PinboardError S.ByteString)
-runPinboardSingleRawBS config req = runPinboardSingleRaw config req concatHandler'
-
-runPinboardSingleJson
-    :: FromJSON a
-    => PinboardConfig       
-    -> PinboardRequest
-    -> IO (Either PinboardError a)
-runPinboardSingleJson config = runPinboardJson config . pinboardJson
-
---------------------------------------------------------------------------------
-
-connOpenRaw :: IO Connection
-connOpenRaw = do
-  ctx <- baselineContextSSL
-  openConnectionSSL ctx "api.pinboard.in" 443
-
-connOpen :: IO (Either SomeException Connection)
-connOpen = try connOpenRaw
-
-connClose :: Either a Connection -> IO ()
-connClose = either (const $ return ()) closeConnection
-
-connFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
-connFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
-
---------------------------------------------------------------------------------
 
 pinboardJson :: FromJSON a => PinboardRequest -> Pinboard a
 pinboardJson req = do 
@@ -133,6 +92,44 @@ pinboardJson req = do
                       _   -> pinboardError UnknownHTTPCode
             _ -> left defaultPinboardError
 
+
+runPinboardJson
+    :: FromJSON a
+    => PinboardConfig
+    -> Pinboard a
+    -> IO (Either PinboardError a)
+runPinboardJson config requests = withOpenSSL $
+  bracket connOpen connClose (either (connFail ConnectionFailure) go)
+  where go conn = runReaderT (runEitherT requests) (config, conn) 
+                  `catch` connFail UnknownErrorType
+
+
+--------------------------------------------------------------------------------
+
+runPinboardSingleRaw
+    :: PinboardConfig       
+    -> PinboardRequest
+    -> (Response -> InputStream S.ByteString -> IO a)
+    -> IO (Either PinboardError a)
+runPinboardSingleRaw config req handler = withOpenSSL $ 
+  bracket connOpen connClose (either (connFail ConnectionFailure) go)
+    where go conn = (Right <$> sendPinboardRequest req config conn handler)
+                    `catch` connFail UnknownErrorType 
+
+runPinboardSingleRawBS
+    :: PinboardConfig       
+    -> PinboardRequest
+    -> IO (Either PinboardError S.ByteString)
+runPinboardSingleRawBS config req = runPinboardSingleRaw config req concatHandler'
+
+runPinboardSingleJson
+    :: FromJSON a
+    => PinboardConfig       
+    -> PinboardRequest
+    -> IO (Either PinboardError a)
+runPinboardSingleJson config = runPinboardJson config . pinboardJson
+
+
 --------------------------------------------------------------------------------
 
 sendPinboardRequest
@@ -152,7 +149,7 @@ sendPinboardRequest PinboardRequest{..} PinboardConfig{..} conn handler = do
     buildReq url = buildRequest $ do
       http GET ("/v1/" <> url)
       setHeader "Connection" "Keep-Alive"  
-      setHeader "User-Agent" "pinboard.hs/0.1"  
+      setHeader "User-Agent" "pinboard.hs/0.2"  
 
 sendPinboardRequestBS 
   :: PinboardRequest 
@@ -162,4 +159,20 @@ sendPinboardRequestBS
 sendPinboardRequestBS request config conn = sendPinboardRequest request config conn handler
   where handler response responseInputStream = do resultBS <- concatHandler response responseInputStream
                                                   return (response, resultBS)
+                                                --
+--------------------------------------------------------------------------------
+connOpenRaw :: IO Connection
+connOpenRaw = do
+  ctx <- baselineContextSSL
+  openConnectionSSL ctx "api.pinboard.in" 443
+
+connOpen :: IO (Either SomeException Connection)
+connOpen = try connOpenRaw
+
+connClose :: Either a Connection -> IO ()
+connClose = either (const $ return ()) closeConnection
+
+connFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
+connFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
+
 

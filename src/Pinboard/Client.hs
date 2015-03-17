@@ -35,7 +35,7 @@ import Pinboard.Client.Internal
 import Pinboard.Client.Types
 import Pinboard.Client.Error
 import Pinboard.Client.Util
-import Data.ByteString (ByteString)
+import Data.ByteString.Char8(pack)
 
-fromApiToken :: ByteString -> PinboardConfig
-fromApiToken token = PinboardConfig { debug = False, apiToken = token }
+fromApiToken :: String -> PinboardConfig
+fromApiToken token = PinboardConfig { debug = False, apiToken = pack token }
