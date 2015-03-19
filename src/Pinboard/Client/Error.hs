@@ -31,6 +31,7 @@ data PinboardErrorHTTPCode =
 ------------------------------------------------------------------------------
 data PinboardErrorType =
         ConnectionFailure
+        | HttpStatusFailure
         | ParseFailure
         | UnknownErrorType 
           deriving Show
