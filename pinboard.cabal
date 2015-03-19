@@ -42,6 +42,7 @@ library
                      , http-types
                      , io-streams
                      , mtl >= 2.1.3.1
+                     , network
                      , old-locale
                      , random >= 1.1
                      , text

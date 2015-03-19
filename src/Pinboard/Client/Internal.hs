@@ -53,6 +53,7 @@ import Network.Http.Client        (Request, Connection, Method (GET), baselineCo
                                    buildRequest, closeConnection, concatHandler, concatHandler', 
                                    getStatusCode, http, openConnectionSSL, receiveResponse, sendRequest,
                                    setHeader, emptyBody, Response, StatusCode)
+import Network                    (withSocketsDo)
 import Network.HTTP.Types         (urlEncode)
 import OpenSSL                    (withOpenSSL)
 import System.IO.Streams          (InputStream)
@@ -203,7 +204,7 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 
 
 connOpenRaw :: IO Connection
-connOpenRaw = do
+connOpenRaw = withSocketsDo $ do
   ctx <- baselineContextSSL
   openConnectionSSL ctx "api.pinboard.in" 443
 
