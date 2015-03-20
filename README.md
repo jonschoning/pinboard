@@ -28,3 +28,16 @@ main = do
     Right details -> print details
     Left pinboardError -> print pinboardError
 ```
+## Modules
+
+[Pinboard.Client](https://hackage.haskell.org/package/pinboard/docs/Pinboard-Client.html)
+
+  Executes the methods defined in Pinboard.Api
+
+[Pinboard.Api](https://hackage.haskell.org/package/pinboard/docs/Pinboard-Api.html)
+
+  Provides Pinboard Api Methods
+
+[Pinboard.ApiTypes](https://hackage.haskell.org/package/pinboard/docs/Pinboard-ApiTypes.html)
+
+  Pinboard Data Structures returned by the Api
