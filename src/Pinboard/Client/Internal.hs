@@ -149,7 +149,7 @@ buildReq ::  S.ByteString -> IO Request
 buildReq url = buildRequest $ do
   http GET ("/v1/" <> url)
   setHeader "Connection" "Keep-Alive"  
-  setHeader "User-Agent" "pinboard.hs/0.2"  
+  setHeader "User-Agent" "pinboard.hs/0.3"  
 
 --------------------------------------------------------------------------------
 
