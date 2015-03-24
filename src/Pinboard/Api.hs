@@ -64,7 +64,7 @@ getPostsAll
   -> Maybe FromDateTime -- ^ return only bookmarks created after this time
   -> Maybe ToDateTime -- ^ return only bookmarks created before this time
   -> Maybe Meta -- ^ include a change detection signature for each bookmark
-  -> Pinboard Posts
+  -> Pinboard [Post]
 getPostsAll tags start results fromdt todt meta = 
   pinboardJson (PinboardRequest path params)
   where 
