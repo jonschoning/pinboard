@@ -25,6 +25,7 @@ module Pinboard (
       -- * Pinboard.Api
       -- | Provides Pinboard Api Methods
     , module Pinboard.Api
+    , module Pinboard.ApiRequest
       -- * Pinboard.ApiTypes
       -- | Pinboard Data Structures returned by the Api
     , module Pinboard.ApiTypes
@@ -32,4 +33,5 @@ module Pinboard (
 
 import Pinboard.Client
 import Pinboard.Api
+import Pinboard.ApiRequest
 import Pinboard.ApiTypes

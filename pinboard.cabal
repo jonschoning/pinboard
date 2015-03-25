@@ -55,6 +55,7 @@ library
   exposed-modules:     
                        Pinboard
                        Pinboard.Api
+                       Pinboard.ApiRequest
                        Pinboard.ApiTypes 
                        Pinboard.Client
                        Pinboard.Client.Internal
