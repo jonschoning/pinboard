@@ -18,8 +18,8 @@ module Pinboard.Client
       fromApiToken
       -- | The PinboardConfig provides authentication via apiToken
     , PinboardConfig       (..)
-      -- * Monadic, Json
-    , runPinboardJson
+      -- * Monadic
+    , runPinboard
     , pinboardJson
       -- * Single
     , runPinboardSingleRaw
@@ -82,13 +82,12 @@ fromApiToken :: String -> PinboardConfig
 fromApiToken token = PinboardConfig { debug = False, apiToken = pack token }
 
 --------------------------------------------------------------------------------
--- | Execute computations from Pinboard.Api w/ json deserialization
-runPinboardJson
-    :: FromJSON a
-    => PinboardConfig
+-- | Execute computations in the Pinboard monad
+runPinboard
+    :: PinboardConfig
     -> Pinboard a
     -> IO (Either PinboardError a)
-runPinboardJson config requests = withOpenSSL $
+runPinboard config requests = withOpenSSL $
   bracket connOpen connClose (either (connFail ConnectionFailure) go)
   where go conn = runReaderT (runEitherT requests) (config, conn) 
                   `catch` connFail UnknownErrorType
@@ -124,7 +123,7 @@ runPinboardSingleJson
     => PinboardConfig       
     -> PinboardRequest
     -> IO (Either PinboardError a)
-runPinboardSingleJson config = runPinboardJson config . pinboardJson
+runPinboardSingleJson config = runPinboard config . pinboardJson
 
 
 --------------------------------------------------------------------------------
@@ -159,7 +158,7 @@ buildReq ::  S.ByteString -> IO Request
 buildReq url = buildRequest $ do
   http GET ("/v1/" <> url)
   setHeader "Connection" "Keep-Alive"  
-  setHeader "User-Agent" "pinboard.hs/0.4"  
+  setHeader "User-Agent" "pinboard.hs/0.6"  
 
 --------------------------------------------------------------------------------
 

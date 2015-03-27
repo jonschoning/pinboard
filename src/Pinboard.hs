@@ -12,7 +12,7 @@
 -- main :: IO ()
 -- main = do
 --   let config = fromApiToken "api token"
---   result <- runPinboardJson config $ getPostsRecent Nothing Nothing
+--   result <- runPinboard config $ getPostsRecent Nothing Nothing
 --   case result of
 --     Right details -> print details
 --     Left pinboardError -> print pinboardError
@@ -23,8 +23,9 @@ module Pinboard (
       -- | Executes the methods defined in Pinboard.Api
       module Pinboard.Client 
       -- * Pinboard.Api
-      -- | Provides Pinboard Api Methods
+      -- | Provides Pinboard Api Access (deserializes into Haskell data structures)
     , module Pinboard.Api
+      -- | Alternate Request Builders
     , module Pinboard.ApiRequest
       -- * Pinboard.ApiTypes
       -- | Pinboard Data Structures returned by the Api

@@ -9,6 +9,8 @@
 -- Portability : POSIX
 --
 -- < https://pinboard.in/api/ >
+--
+-- Provides Pinboard Api Access (deserializes into Haskell data structures)
 
 module Pinboard.Api
     ( 
