@@ -23,7 +23,6 @@ import Data.Time.Format    (readTime)
 import System.Locale       (defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
 
-
 -- * Posts
 
 data Posts = Posts {

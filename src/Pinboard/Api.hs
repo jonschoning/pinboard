@@ -33,11 +33,12 @@ module Pinboard.Api
       getNote,
     ) where
 
-import Pinboard.Client.Internal (pinboardJson)
+import Pinboard.Client          (pinboardJson)
 import Pinboard.Client.Types    (Pinboard)
 import Control.Applicative      ((<$>))
 import Data.Text                (Text)
 import Data.Time                (UTCTime)
+import Pinboard.Client.Types    (ResultFormatType (..))
 import Pinboard.ApiTypes        
 import Pinboard.ApiRequest
                                             
@@ -48,7 +49,7 @@ getPostsRecent
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Count -- ^ number of results to return. Default is 15, max is 100  
   -> Pinboard Posts
-getPostsRecent tags count = pinboardJson $ getPostsRecentRequest tags count
+getPostsRecent tags count = pinboardJson $ getPostsRecentRequest FormatJson tags count
 
 -- | posts/all : Returns all bookmarks in the user's account.
 getPostsAll
@@ -59,7 +60,7 @@ getPostsAll
   -> Maybe ToDateTime -- ^ return only bookmarks created before this time
   -> Maybe Meta -- ^ include a change detection signature for each bookmark
   -> Pinboard [Post]
-getPostsAll tags start results fromdt todt meta = pinboardJson $ getPostsAllRequest tags start results fromdt todt meta 
+getPostsAll tags start results fromdt todt meta = pinboardJson $ getPostsAllRequest FormatJson tags start results fromdt todt meta 
 
 -- | posts/get : Returns one or more posts on a single day matching the arguments. 
 -- If no date or url is given, date of most recent bookmark will be used.
@@ -68,18 +69,18 @@ getPostsForDate
   -> Maybe Date -- ^ return results bookmarked on this day
   -> Maybe Url -- ^ return bookmark for this URL
   -> Pinboard Posts
-getPostsForDate tags date url = pinboardJson $ getPostsForDateRequest tags date url
+getPostsForDate tags date url = pinboardJson $ getPostsForDateRequest FormatJson tags date url
 
 -- | posts/dates : Returns a list of dates with the number of posts at each date.
 getPostsDates
   :: Maybe [Tag] -- ^ filter by up to three tags
   -> Pinboard PostDates
-getPostsDates tags = pinboardJson $ getPostsDatesRequest tags
+getPostsDates tags = pinboardJson $ getPostsDatesRequest FormatJson tags
 
 
 -- | posts/update : Returns the most recent time a bookmark was added, updated or deleted.
 getPostsMRUTime :: Pinboard UTCTime
-getPostsMRUTime = fromUpdateTime <$> pinboardJson getPostsMRUTimeRequest
+getPostsMRUTime = fromUpdateTime <$> pinboardJson (getPostsMRUTimeRequest FormatJson)
 
 -- | posts/suggest : Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
@@ -87,13 +88,13 @@ getPostsMRUTime = fromUpdateTime <$> pinboardJson getPostsMRUTimeRequest
 getSuggestedTags
   :: Url
   -> Pinboard [Suggested]
-getSuggestedTags url = pinboardJson $ getSuggestedTagsRequest url
+getSuggestedTags url = pinboardJson $ getSuggestedTagsRequest FormatJson url
 
 -- | posts/delete : Delete an existing bookmark.
 deletePost 
   :: Url
   -> Pinboard ()
-deletePost url = fromDoneResult <$> (pinboardJson $ deletePostRequest url)
+deletePost url = fromDoneResult <$> (pinboardJson $ deletePostRequest FormatJson url)
 
 -- | posts/add : Add a bookmark
 addPost
@@ -106,7 +107,7 @@ addPost
   -> Maybe Shared   -- ^ Make bookmark public. Default is "yes" unless user has enabled the "save all bookmarks as private" user setting, in which case default is "no"
   -> Maybe ToRead   -- ^ Marks the bookmark as unread. Default is "no"
   -> Pinboard ()
-addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> (pinboardJson $ addPostRequest url descr ext tags ctime repl shared toread)
+addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> (pinboardJson $ addPostRequest FormatJson url descr ext tags ctime repl shared toread)
 
 -- TAGS ----------------------------------------------------------------------
 
@@ -115,14 +116,14 @@ addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> (pinboa
 -- times they were used.
 getTags 
   :: Pinboard TagMap
-getTags = fromJsonTagMap <$> (pinboardJson $ getTagsRequest)
+getTags = fromJsonTagMap <$> (pinboardJson $ getTagsRequest FormatJson )
 
 
 -- | tags/delete : Delete an existing tag.
 deleteTag 
   :: Tag 
   -> Pinboard ()
-deleteTag tag = fromDoneResult <$> (pinboardJson $ deleteTagRequest tag)
+deleteTag tag = fromDoneResult <$> (pinboardJson $ deleteTagRequest FormatJson tag)
 
 
 -- | tags/rename : Rename an tag, or fold it in to an existing tag
@@ -130,7 +131,7 @@ renameTag
   :: Old -- ^ note: match is not case sensitive
   -> New -- ^ if empty, nothing will happen
   -> Pinboard ()
-renameTag old new = fromDoneResult <$> (pinboardJson $ renameTagRequest old new)
+renameTag old new = fromDoneResult <$> (pinboardJson $ renameTagRequest FormatJson old new)
 
 
 -- USER ----------------------------------------------------------------------
@@ -138,12 +139,12 @@ renameTag old new = fromDoneResult <$> (pinboardJson $ renameTagRequest old new)
 -- | user/secret : Returns the user's secret RSS key (for viewing private feeds)
 getUserSecretRssKey 
   :: Pinboard Text
-getUserSecretRssKey = fromTextResult <$> (pinboardJson $ getUserSecretRssKeyRequest)
+getUserSecretRssKey = fromTextResult <$> (pinboardJson $ getUserSecretRssKeyRequest FormatJson )
 
 -- | user/api_token : Returns the user's API token (for making API calls without a password)
 getUserApiToken 
   :: Pinboard Text
-getUserApiToken = fromTextResult <$> (pinboardJson $ getUserApiTokenRequest)
+getUserApiToken = fromTextResult <$> (pinboardJson $ getUserApiTokenRequest FormatJson )
 
 
 -- NOTES ---------------------------------------------------------------------
@@ -151,11 +152,11 @@ getUserApiToken = fromTextResult <$> (pinboardJson $ getUserApiTokenRequest)
 -- | notes/list : Returns a list of the user's notes (note text detail is not included)
 getNoteList 
   :: Pinboard NoteList
-getNoteList = pinboardJson $ getNoteListRequest
+getNoteList = pinboardJson $ getNoteListRequest FormatJson 
 
 -- | notes/id : Returns an individual user note. The hash property is a 20 character long sha1 hash of the note text.
 getNote 
   :: NoteId
   -> Pinboard Note
-getNote noteid = pinboardJson $ getNoteRequest noteid
+getNote noteid = pinboardJson $ getNoteRequest FormatJson noteid
 

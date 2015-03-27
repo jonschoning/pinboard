@@ -10,6 +10,7 @@ module Pinboard.Client.Types
   ( Pinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
+  , ResultFormatType (..)
   , Param (..)
   , ParamsBS
   ) where
@@ -46,7 +47,10 @@ type ParamsBS = [(ByteString, ByteString)]
 
 ------------------------------------------------------------------------------
 
-data Param = Format Text
+data ResultFormatType = FormatJson | FormatXml
+      deriving (Show, Eq)
+
+data Param = Format ResultFormatType
            | Tag Text
            | Tags Text
            | Old Text

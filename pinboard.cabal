@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.4
+version:             0.5
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE
@@ -58,7 +58,6 @@ library
                        Pinboard.ApiRequest
                        Pinboard.ApiTypes 
                        Pinboard.Client
-                       Pinboard.Client.Internal
                        Pinboard.Client.Error
                        Pinboard.Client.Types
                        Pinboard.Client.Util

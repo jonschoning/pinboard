@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 -- |
 -- Module      : Pinboard.Client.Util
 -- Copyright   : (c) Jon Schoning, 2015
@@ -15,6 +16,7 @@ module Pinboard.Client.Util
     , paramToName
     , paramToText
     , encodeParams
+    , ensureResultFormatType
     ) where
 
 import           Data.Monoid           (Monoid, mconcat, mempty, (<>))
@@ -22,7 +24,7 @@ import           Data.String           (IsString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
-import           Pinboard.Client.Types (PinboardConfig (..), Param (..), ParamsBS)
+import           Pinboard.Client.Types (PinboardRequest (..), PinboardConfig (..), ResultFormatType (..), Param (..), ParamsBS)
 import Network.HTTP.Types(urlEncode)
 
 ------------------------------------------------------------------------------
@@ -65,13 +67,20 @@ encodeParams xs = do
   return ( T.encodeUtf8 k
          , (urlEncode True . T.encodeUtf8 ) v
          )
+ensureResultFormatType :: ResultFormatType -> PinboardRequest -> PinboardRequest
+ensureResultFormatType fmt req = 
+  if hasFormat then req else req { requestParams = Format fmt : params }
+  where params = requestParams req
+        hasFormat = Format fmt `elem` params
+
 
 paramToText :: Param -> (Text, Text)
 paramToText (Tag a)      = ("tag", a)
 paramToText (Tags a)     = ("tags", a)
 paramToText (Old a)      = ("old", a)
 paramToText (New a)      = ("new", a)
-paramToText (Format a)   = ("format", a)
+paramToText (Format FormatJson) = ("format", "json")
+paramToText (Format FormatXml)  = ("format", "xml")
 paramToText (Count a)    = ("count", toText a)
 paramToText (Start a)    = ("start", toText a)
 paramToText (Results a)  = ("results", toText a)
