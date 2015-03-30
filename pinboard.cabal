@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.6.1
+version:             0.6.2
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE
@@ -33,7 +33,7 @@ Description:
 library 
   hs-source-dirs:      src
   build-depends:       base >=4.6 && < 5.0
-                     , aeson
+                     , aeson > 0.8
                      , bytestring
                      , containers
                      , either
