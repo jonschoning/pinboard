@@ -19,8 +19,7 @@ import Data.Data           (Data, Typeable)
 import Data.Text           (Text, words, unpack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
-import Data.Time.Format    (readTime)
-import System.Locale       (defaultTimeLocale)
+import Data.Time.Format    (parseTimeOrError, defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
 
 -- * Posts
@@ -145,7 +144,7 @@ instance FromJSON Note where
    parseJSON _ = error "bad parse"
 
 readNoteTime :: String -> UTCTime
-readNoteTime = readTime defaultTimeLocale "%F %T"
+readNoteTime = parseTimeOrError True defaultTimeLocale "%F %T"
 
 
 -- * Tags
