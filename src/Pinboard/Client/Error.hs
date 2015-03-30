@@ -13,8 +13,10 @@ module Pinboard.Client.Error
     , PinboardError         (..)
     ) where
 
-import           Data.Text           (Text)
-import Data.Monoid(mempty)
+import Data.Text (Text)
+
+import Data.Monoid
+import Prelude
 
 ------------------------------------------------------------------------------
 data PinboardErrorHTTPCode = 

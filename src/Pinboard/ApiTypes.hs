@@ -10,8 +10,6 @@
 -- Portability : POSIX
 module Pinboard.ApiTypes where
 
-import Prelude hiding      (words)
-import Control.Applicative ((<$>), (<*>), (<|>))
 import Data.Aeson          (FromJSON (parseJSON), Value (String, Object), ( .:))
 import Data.Aeson.Types    (Parser)
 import Data.HashMap.Strict (HashMap, member, toList)
@@ -21,6 +19,9 @@ import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
 import Data.Time.Format    (parseTimeOrError, defaultTimeLocale)
 import qualified Data.HashMap.Strict as HM
+
+import Control.Applicative 
+import Prelude hiding      (words)
 
 -- * Posts
 

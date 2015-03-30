@@ -37,13 +37,15 @@ module Pinboard.Api
 
 import Pinboard.Client          (pinboardJson)
 import Pinboard.Client.Types    (Pinboard)
-import Control.Applicative      ((<$>))
 import Data.Text                (Text)
 import Data.Time                (UTCTime)
 import Pinboard.Client.Types    (ResultFormatType (..))
 import Pinboard.ApiTypes        
 import Pinboard.ApiRequest
-                                            
+
+import Control.Applicative
+import Prelude                                            
+
 -- POSTS ---------------------------------------------------------------------
 
 -- | posts/recent : Returns a list of the user's most recent posts, filtered by tag.

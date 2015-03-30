@@ -35,14 +35,15 @@ module Pinboard.ApiRequest
       getNoteRequest,
     ) where
 
-import Prelude hiding (unwords)
 import Pinboard.Client.Types    (PinboardRequest (..), Param (..))
 import Pinboard.Client.Util     ((</>))
-import Control.Applicative      ((<$>))
 import Data.Text                (unwords)
 import Data.Maybe               (catMaybes)
 import Pinboard.ApiTypes        
 import Pinboard.Client.Types    (ResultFormatType (..))
+
+import Control.Applicative
+import Prelude hiding (unwords)
 
                                             
 -- POSTS ---------------------------------------------------------------------

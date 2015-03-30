@@ -19,13 +19,15 @@ module Pinboard.Client.Util
     , ensureResultFormatType
     ) where
 
-import           Data.Monoid           (Monoid, mconcat, mempty, (<>))
 import           Data.String           (IsString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
 import           Pinboard.Client.Types (PinboardRequest (..), PinboardConfig (..), ResultFormatType (..), Param (..), ParamsBS)
 import Network.HTTP.Types(urlEncode)
+
+import Data.Monoid
+import Prelude
 
 ------------------------------------------------------------------------------
 

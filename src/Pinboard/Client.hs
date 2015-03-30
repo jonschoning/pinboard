@@ -49,7 +49,6 @@ module Pinboard.Client
     ) where
 
 
-import Control.Applicative        ((<$>))
 import Control.Exception          (catch, SomeException, try, bracket)
 import Control.Monad.IO.Class     (MonadIO (liftIO))
 import Control.Monad.Reader       (ask, runReaderT)
@@ -75,6 +74,9 @@ import Pinboard.Client.Util
 import qualified Data.ByteString             as S
 import qualified Data.Text                   as T
 import qualified Data.Text.Encoding          as T
+
+import Control.Applicative
+import Prelude
 
 
 -- | Create a default PinboardConfig using the supplied apiToken
