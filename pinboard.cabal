@@ -37,6 +37,7 @@ library
                      , bytestring
                      , containers
                      , either
+                     , haskell-src-exts
                      , HsOpenSSL
                      , http-streams
                      , http-types

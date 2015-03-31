@@ -19,10 +19,13 @@ import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
 import Data.Time.Format    (readTime)
 import System.Locale       (defaultTimeLocale)
+import Language.Haskell.Exts.Parser
+import Language.Haskell.Exts.Pretty
 import qualified Data.HashMap.Strict as HM
 
 import Control.Applicative 
 import Prelude hiding      (words)
+
 
 -- * Posts
 
@@ -200,6 +203,16 @@ newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
 instance FromJSON UpdateTime where
   parseJSON (Object o) = ToUpdateTime <$> (o .: "update_time")
   parseJSON _ = error "bad parse"
+
+-- * Pretty
+
+prettyString :: String -> String
+prettyString s = case parseExp s of
+    ParseOk x -> prettyPrint x
+    ParseFailed{} -> s
+
+pretty :: Show a => a -> String
+pretty = prettyString . show
 
 -- * Aliases
 
