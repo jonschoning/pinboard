@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -------------------------------------------
@@ -22,6 +23,7 @@ module Pinboard.Api
       getPostsMRUTime,
       getSuggestedTags,
       addPost,
+      addPostRec,
       deletePost,
       -- ** Tags
       getTags,
@@ -100,18 +102,25 @@ deletePost
   -> Pinboard ()
 deletePost url = fromDoneResult <$> (pinboardJson $ deletePostRequest FormatJson url)
 
--- | posts/add : Add a bookmark
+-- | posts/add : Add or Update a bookmark
 addPost
   :: Url            -- ^ the URL of the item
   -> Description    -- ^ Title of the item. This field is unfortunately named 'description' for backwards compatibility with the delicious API
   -> Maybe Extended -- ^ Description of the item. Called 'extended' for backwards compatibility with delicious API
   -> Maybe [Tag]    -- ^ List of up to 100 tags
   -> Maybe DateTime -- ^ creation time for this bookmark. Defaults to current time. Datestamps more than 10 minutes ahead of server time will be reset to current server time
-  -> Maybe Replace  -- ^ Replace any existing bookmark with this URL. Default is yes. If set to no, will throw an error if bookmark exists
+  -> Maybe Replace  -- ^ Replace any existing bookmark with this URL. Default is yes. If set to no, will fail if bookmark exists
   -> Maybe Shared   -- ^ Make bookmark public. Default is "yes" unless user has enabled the "save all bookmarks as private" user setting, in which case default is "no"
   -> Maybe ToRead   -- ^ Marks the bookmark as unread. Default is "no"
   -> Pinboard ()
 addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> (pinboardJson $ addPostRequest FormatJson url descr ext tags ctime repl shared toread)
+
+-- | posts/add :  Add or Update a bookmark, from a Post record
+addPostRec
+  :: Post         -- ^ a Post record
+  -> Replace      -- ^ Replace any existing bookmark with the Posts URL. If set to no, will fail if bookmark exists 
+  -> Pinboard ()
+addPostRec post replace = fromDoneResult <$> (pinboardJson $ addPostRecRequest FormatJson post replace)
 
 -- TAGS ----------------------------------------------------------------------
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -------------------------------------------
 -- |
@@ -22,6 +23,7 @@ module Pinboard.ApiRequest
       getPostsMRUTimeRequest,
       getSuggestedTagsRequest,
       addPostRequest,
+      addPostRecRequest,
       deletePostRequest,
       -- ** Tags
       getTagsRequest,
@@ -145,7 +147,7 @@ deletePostRequest fmt url = PinboardRequest path params
     params = [Format fmt, Url url]
 
 
--- | posts/add : Add a bookmark
+-- | posts/add : Add or Update a bookmark
 addPostRequest
   :: ResultFormatType
   -> Url            -- ^ the URL of the item
@@ -170,6 +172,21 @@ addPostRequest fmt url descr ext tags ctime repl shared toread =
                        , Replace <$> repl
                        , Shared <$> shared
                        , ToRead <$> toread ]
+
+-- | posts/add : Add or Update a bookmark (from a Post record)
+addPostRecRequest
+  :: ResultFormatType
+  -> Post         -- ^ the Post record
+  -> Replace      -- ^ Replace any existing bookmark with the Posts URL. If set to no, will throw an error if bookmark exists 
+  -> PinboardRequest
+addPostRecRequest fmt Post{..} replace = addPostRequest fmt postHref  
+                                                            postDescription  
+                                                            ( Just postExtended ) 
+                                                            ( Just postTags     ) 
+                                                            ( Just postTime     ) 
+                                                            ( Just replace      ) 
+                                                            ( Just postShared   ) 
+                                                            ( Just postToread   )
 
 -- TAGS ----------------------------------------------------------------------
 
