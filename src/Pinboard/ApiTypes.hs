@@ -1,6 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- |
 -- Module      : Pinboard.ApiTypes
@@ -10,21 +12,22 @@
 -- Portability : POSIX
 module Pinboard.ApiTypes where
 
-import Data.Aeson          (FromJSON (parseJSON), Value (String, Object), ( .:))
+import Data.Aeson          
 import Data.Aeson.Types    (Parser)
 import Data.HashMap.Strict (HashMap, member, toList)
 import Data.Data           (Data, Typeable)
-import Data.Text           (Text, words, unpack)
+import Data.Text           (Text, words, unwords, unpack, pack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
-import Data.Time.Format    (readTime)
+import Data.Time.Format    (readTime, formatTime)
 import System.Locale       (defaultTimeLocale)
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Pretty
 import qualified Data.HashMap.Strict as HM
+import qualified Data.Vector as V
 
 import Control.Applicative 
-import Prelude hiding      (words)
+import Prelude hiding      (words, unwords)
 
 
 -- * Posts
@@ -41,6 +44,12 @@ instance FromJSON Posts where
              <*> o .: "user"
              <*> o .: "posts"
    parseJSON _ = error "bad parse"
+
+instance ToJSON Posts where
+  toJSON Posts{..} = object 
+    [ "date"  .= toJSON postsDate
+    , "user"  .= toJSON postsUser
+    , "posts" .= toJSON postsPosts ]
 
 data Post = Post {
       postHref         :: Text
@@ -67,9 +76,25 @@ instance FromJSON Post where
             <*> (words <$> o .: "tags")
    parseJSON _ = error "bad parse"
 
+instance ToJSON Post where
+  toJSON Post{..} = object 
+    [ "href"        .= toJSON postHref
+    , "description" .= toJSON postDescription
+    , "extended"    .= toJSON postExtended
+    , "meta"        .= toJSON postMeta
+    , "hash"        .= toJSON postHash
+    , "time"        .= toJSON postTime
+    , "shared"      .= boolToYesNo postShared
+    , "toread"      .= boolToYesNo postToread
+    , "tags"        .= unwords postTags ]
+
 boolFromYesNo :: Text -> Bool
 boolFromYesNo "yes" = True
 boolFromYesNo _     = False
+
+boolToYesNo :: Bool -> Text
+boolToYesNo True = "yes"
+boolToYesNo _    = "no"
 
 data PostDates = PostDates {
       postDatesUser     :: Text
@@ -90,6 +115,13 @@ instance FromJSON PostDates where
        parseDates _ = []
    parseJSON _ = error "bad parse"
 
+instance ToJSON PostDates where
+  toJSON PostDates{..} = object 
+    [ "user"  .= toJSON postDatesUser
+    , "tag"   .= toJSON postDatesTag
+    , "dates" .= object (dateCountToPair <$> postDatesCount) ]
+      where dateCountToPair (day, count) = ((pack.show) day, String $ (pack.show) count)
+
 type DateCount = (Day, Int)
 
 
@@ -105,6 +137,11 @@ instance FromJSON NoteList where
        NoteList <$> o .: "count"
                 <*> o .: "notes"
    parseJSON _ = error "bad parse"
+
+instance ToJSON NoteList where
+  toJSON NoteList{..} = object 
+    [ "count" .= toJSON noteListCount
+    , "notes" .= toJSON noteListItems ]
 
 data NoteListItem = NoteListItem {
       noteListItemId     :: Text
@@ -125,6 +162,14 @@ instance FromJSON NoteListItem where
                     <*> (readNoteTime <$> o .: "updated_at")
    parseJSON _ = error "bad parse"
 
+instance ToJSON NoteListItem where
+  toJSON NoteListItem{..} = object 
+    [ "id"         .= toJSON noteListItemId
+    , "hash"       .= toJSON noteListItemHash
+    , "title"      .= toJSON noteListItemTitle
+    , "length"     .= toJSON (show noteListItemLength)
+    , "created_at" .= toJSON (showNoteTime noteListItemCreatedAt)
+    , "updated_at" .= toJSON (showNoteTime noteListItemUpdatedAt) ]
 
 
 data Note = Note {
@@ -148,9 +193,21 @@ instance FromJSON Note where
             <*> (readNoteTime <$> o .: "updated_at")
    parseJSON _ = error "bad parse"
 
+instance ToJSON Note where
+  toJSON Note{..} = object 
+    [ "id"         .= toJSON noteId
+    , "hash"       .= toJSON noteHash
+    , "title"      .= toJSON noteTitle
+    , "text"       .= toJSON noteText
+    , "length"     .= toJSON (show noteLength)
+    , "created_at" .= toJSON (showNoteTime noteCreatedAt)
+    , "updated_at" .= toJSON (showNoteTime noteUpdatedAt) ]
+
 readNoteTime :: String -> UTCTime
 readNoteTime = readTime defaultTimeLocale "%F %T"
 
+showNoteTime :: UTCTime -> String
+showNoteTime = formatTime defaultTimeLocale "%F %T"
 
 -- * Tags
 
@@ -164,6 +221,9 @@ instance FromJSON JsonTagMap where
     where toTags (Object o) = ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
           toTags _ = error "bad parse"
 
+instance ToJSON JsonTagMap where
+  toJSON (ToJsonTagMap o) = toJSON $ show <$> o
+
 
 data Suggested = Popular [Text]
                | Recommended [Text]
@@ -176,6 +236,13 @@ instance FromJSON Suggested where
      | otherwise = error "bad parse"  
    parseJSON _ = error "bad parse"
 
+
+instance ToJSON [Suggested] where
+  toJSON xs = Array $ toJSON <$> V.fromList xs
+
+instance ToJSON Suggested where
+  toJSON (Popular tags)     = object [ "popular" .= toJSON tags]
+  toJSON (Recommended tags) = object [ "recommended" .= toJSON tags]
 
 -- * Scalars
 
