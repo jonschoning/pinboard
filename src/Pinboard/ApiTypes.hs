@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP #-}
 
 -- |
 -- Module      : Pinboard.ApiTypes
@@ -19,12 +20,18 @@ import Data.Data           (Data, Typeable)
 import Data.Text           (Text, words, unwords, unpack, pack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
-import Data.Time.Format    (readTime, formatTime)
-import System.Locale       (defaultTimeLocale)
+
 import Language.Haskell.Exts.Parser
 import Language.Haskell.Exts.Pretty
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
+
+#if MIN_VERSION_time(1,5,0)
+import Data.Time.Format    (parseTimeOrError, formatTime, defaultTimeLocale)
+#else
+import Data.Time.Format    (readTime, formatTime)
+import System.Locale       (defaultTimeLocale)
+#endif
 
 import Control.Applicative 
 import Prelude hiding      (words, unwords)
@@ -204,7 +211,13 @@ instance ToJSON Note where
     , "updated_at" .= toJSON (showNoteTime noteUpdatedAt) ]
 
 readNoteTime :: String -> UTCTime
-readNoteTime = readTime defaultTimeLocale "%F %T"
+readNoteTime = parse' defaultTimeLocale "%F %T"
+  where
+#if MIN_VERSION_time(1,5,0)
+    parse' = parseTimeOrError True
+#else
+    parse' = readTime
+#endif
 
 showNoteTime :: UTCTime -> String
 showNoteTime = formatTime defaultTimeLocale "%F %T"
