@@ -27,15 +27,14 @@ module Pinboard.Client
     , runPinboardSingleJson
       -- * Sending
     , sendPinboardRequest
-    , sendPinboardRequestBS
       -- * Connections
     , connOpenRaw
     , connOpen
     , connClose
     , connFail
      -- * JSON Streams
-    ,parseJSONResponseStream
-    ,parseJSONFromStream
+    ,parseJSONResponse
+    ,decodeJSONResponse
      -- * Status Codes
     ,checkStatusCode
      -- * Error Helpers
@@ -55,23 +54,26 @@ import Control.Monad.Reader       (ask, runReaderT)
 import Control.Monad.Trans.Either (runEitherT, hoistEither)
 import Data.ByteString.Char8      (pack)
 import Data.Monoid                ((<>))
-import Data.Aeson                 (parseJSON, json', FromJSON)
+import Data.Aeson                 (parseJSON, json', FromJSON, eitherDecodeStrict')
 import Data.Aeson.Types           (parseEither)
-import Network.Http.Client        (Request, Connection, Method (GET), baselineContextSSL, 
-                                   buildRequest, closeConnection, concatHandler, concatHandler', 
-                                   getStatusCode, http, openConnectionSSL, receiveResponse, sendRequest,
-                                   setHeader, emptyBody, Response, StatusCode)
+
 import Network                    (withSocketsDo)
 import Network.HTTP.Types         (urlEncode)
-import OpenSSL                    (withOpenSSL)
-import System.IO.Streams          (InputStream)
-import System.IO.Streams.Attoparsec (parseFromStream)
+
+import           Network.HTTP.Client
+import           Network.HTTP.Client.TLS
+import qualified Network.HTTP.Types.Method    as NHTM
+import qualified Network.HTTP.Types.Status    as NHTS
+import qualified Network.HTTP.Types.Header    as NHTH
+import qualified Network.HTTP.Types.URI       as NHTU
+
 
 import Pinboard.Client.Types
 import Pinboard.Client.Error
 import Pinboard.Client.Util
 
 import qualified Data.ByteString             as S
+import qualified Data.ByteString.Lazy        as LBS
 import qualified Data.Text                   as T
 import qualified Data.Text.Encoding          as T
 
@@ -89,7 +91,7 @@ runPinboard
     :: PinboardConfig
     -> Pinboard a
     -> IO (Either PinboardError a)
-runPinboard config requests = withOpenSSL $
+runPinboard config requests = 
   bracket connOpen connClose (either (connFail ConnectionFailure) go)
   where go conn = runReaderT (runEitherT requests) (config, conn) 
                   `catch` connFail UnknownErrorType
@@ -98,7 +100,7 @@ runPinboard config requests = withOpenSSL $
 pinboardJson :: FromJSON a => PinboardRequest -> Pinboard a
 pinboardJson req = do 
   (config, conn)  <- ask
-  (_, result) <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config conn parseJSONResponseStream
+  (_, result) <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config conn parseJSONResponse
   hoistEither result
 
 
@@ -107,18 +109,22 @@ pinboardJson req = do
 runPinboardSingleRaw
     :: PinboardConfig       
     -> PinboardRequest
-    -> (Response -> InputStream S.ByteString -> IO a)
+    -> (Response LBS.ByteString -> a)
     -> IO (Either PinboardError a)
-runPinboardSingleRaw config req handler = withOpenSSL $ 
+runPinboardSingleRaw config req handler = 
   bracket connOpen connClose (either (connFail ConnectionFailure) go)
     where go conn = (Right <$> sendPinboardRequest req config conn handler)
-                    `catch` connFail UnknownErrorType 
+                    `catch` connFail UnknownErrorType
 
 runPinboardSingleRawBS
     :: PinboardConfig       
     -> PinboardRequest
-    -> IO (Either PinboardError S.ByteString)
-runPinboardSingleRawBS config req = runPinboardSingleRaw config req concatHandler'
+    -> IO (Either PinboardError LBS.ByteString)
+runPinboardSingleRawBS config req = do
+  res <- runPinboardSingleRaw config req id
+  return $ do
+    r <- res
+    responseBody r <$ checkStatusCode (NHTS.statusCode (responseStatus r))
 
 runPinboardSingleJson
     :: FromJSON a
@@ -133,60 +139,50 @@ runPinboardSingleJson config = runPinboard config . pinboardJson
 sendPinboardRequest
       :: PinboardRequest 
       -> PinboardConfig 
-      -> Connection 
-      -> (Response -> InputStream S.ByteString -> IO a)
+      -> Manager
+      -> (Response LBS.ByteString -> a)
       -> IO a
-sendPinboardRequest PinboardRequest{..} PinboardConfig{..} conn handler = do
-   let url = S.concat [ T.encodeUtf8 requestPath 
+sendPinboardRequest PinboardRequest{..} PinboardConfig{..} man handler = do
+   let url = T.concat [ requestPath 
                       , "?" 
-                      , paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
-   req <- buildReq url
-   sendRequest conn req emptyBody
-   receiveResponse conn handler
-
-
-sendPinboardRequestBS 
-  :: PinboardRequest 
-  -> PinboardConfig 
-  -> Connection 
-  -> IO (Response, S.ByteString) 
-sendPinboardRequestBS request config conn = sendPinboardRequest request config conn handler
-  where handler response responseInputStream = do resultBS <- concatHandler response responseInputStream
-                                                  return (response, resultBS)
+                      , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
+   req <- buildReq $ T.unpack url
+   res <- httpLbs req man
+   return $ handler res
 
 --------------------------------------------------------------------------------
 
-buildReq ::  S.ByteString -> IO Request
-buildReq url = buildRequest $ do
-  http GET ("/v1/" <> url)
-  setHeader "Connection" "Keep-Alive"  
-  setHeader "User-Agent" "pinboard.hs/0.6.5"  
+buildReq ::  String -> IO Request
+buildReq url = do
+  req <- parseUrl $ "https://api.pinboard.in/v1/" <> url
+  return $ req 
+    { requestHeaders = [("User-Agent","pinboard.hs/0.7.5")]
+    , checkStatus = \_ _ _ -> Nothing
+    }
 
 --------------------------------------------------------------------------------
 
-parseJSONResponseStream 
+parseJSONResponse
+    :: (FromJSON a)
+    => Response LBS.ByteString
+    -> (Response LBS.ByteString, Either PinboardError a)
+parseJSONResponse response = 
+  (response, either (Left . addErrMsg (toText (responseBody response))) 
+                    (const $ decodeJSONResponse (responseBody response)) 
+                    (checkStatusCode (NHTS.statusCode (responseStatus response))))
+
+
+decodeJSONResponse
     :: FromJSON a 
-    => Response 
-    -> InputStream S.ByteString
-    -> IO (Response, Either PinboardError a)
-parseJSONResponseStream response stream = 
-  (response,) <$> either (return . Left . addErrMsg (toText response)) 
-                         (const $ parseJSONFromStream stream) 
-                         (checkStatusCode $ getStatusCode response)
-
-
-parseJSONFromStream 
-    :: FromJSON a 
-    => InputStream S.ByteString 
-    -> IO (Either PinboardError a)
-parseJSONFromStream s = do 
-  r <- parseFromStream (parseEither parseJSON <$> json') s
-  return $ either (Left . createParserErr . toText)  Right r
-  `catch` connFail ParseFailure
+    => LBS.ByteString 
+    -> Either PinboardError a
+decodeJSONResponse s = 
+  let r = eitherDecodeStrict' (LBS.toStrict s) 
+  in either (Left . createParserErr . toText) Right r
 
 --------------------------------------------------------------------------------
 
-checkStatusCode :: StatusCode -> Either PinboardError ()
+checkStatusCode :: Int -> Either PinboardError ()
 checkStatusCode = \case
   200 -> Right ()
   400 -> httpStatusPinboardError BadRequest
@@ -214,16 +210,15 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 
 
-connOpenRaw :: IO Connection
-connOpenRaw = withSocketsDo $ do
-  ctx <- baselineContextSSL
-  openConnectionSSL ctx "api.pinboard.in" 443
+connOpenRaw :: IO Manager
+connOpenRaw = withSocketsDo . newManager 
+                $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
-connOpen :: IO (Either SomeException Connection)
+connOpen :: IO (Either SomeException Manager)
 connOpen = try connOpenRaw
 
-connClose :: Either a Connection -> IO ()
-connClose = either (const $ return ()) closeConnection
+connClose :: Either a Manager -> IO ()
+connClose = either (const $ return ()) closeManager
 
 connFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
 connFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing

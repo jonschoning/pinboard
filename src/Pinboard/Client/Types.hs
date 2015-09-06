@@ -19,14 +19,14 @@ import Control.Monad.Reader       (ReaderT)
 import Control.Monad.Trans.Either (EitherT)
 import Data.ByteString            (ByteString)
 import Data.Text                  (Text)
-import Network.Http.Client        (Connection)
+import Network.HTTP.Client        (Manager)
 import Pinboard.Client.Error  (PinboardError (..))
 import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
 
 ------------------------------------------------------------------------------
 
-type Pinboard = EitherT PinboardError (ReaderT (PinboardConfig, Connection) IO)
+type Pinboard = EitherT PinboardError (ReaderT (PinboardConfig, Manager) IO)
 
 ------------------------------------------------------------------------------
 
