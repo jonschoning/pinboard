@@ -1,3 +1,7 @@
+__v0.7.5__
+
+replacing/removing io-streams in favor of http-client
+
 __v0.6.5__
 
 compatability with both time < 1.5 and time >= 1.5

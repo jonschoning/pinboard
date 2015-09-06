@@ -27,11 +27,11 @@ module Pinboard.Client
     , runPinboardSingleJson
       -- * Sending
     , sendPinboardRequest
-      -- * Connections
-    , connOpenRaw
-    , connOpen
-    , connClose
-    , connFail
+      -- * mgrections
+    , mgrOpenRaw
+    , mgrOpen
+    , mgrClose
+    , mgrFail
      -- * JSON Streams
     ,parseJSONResponse
     ,decodeJSONResponse
@@ -92,15 +92,15 @@ runPinboard
     -> Pinboard a
     -> IO (Either PinboardError a)
 runPinboard config requests = 
-  bracket connOpen connClose (either (connFail ConnectionFailure) go)
-  where go conn = runReaderT (runEitherT requests) (config, conn) 
-                  `catch` connFail UnknownErrorType
+  bracket mgrOpen mgrClose (either (mgrFail ConnectionFailure) go)
+  where go mgr = runReaderT (runEitherT requests) (config, mgr) 
+                  `catch` mgrFail UnknownErrorType
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson :: FromJSON a => PinboardRequest -> Pinboard a
 pinboardJson req = do 
-  (config, conn)  <- ask
-  (_, result) <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config conn parseJSONResponse
+  (config, mgr)  <- ask
+  (_, result) <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
   hoistEither result
 
 
@@ -112,9 +112,9 @@ runPinboardSingleRaw
     -> (Response LBS.ByteString -> a)
     -> IO (Either PinboardError a)
 runPinboardSingleRaw config req handler = 
-  bracket connOpen connClose (either (connFail ConnectionFailure) go)
-    where go conn = (Right <$> sendPinboardRequest req config conn handler)
-                    `catch` connFail UnknownErrorType
+  bracket mgrOpen mgrClose (either (mgrFail ConnectionFailure) go)
+    where go mgr = (Right <$> sendPinboardRequest req config mgr handler)
+                    `catch` mgrFail UnknownErrorType
 
 runPinboardSingleRawBS
     :: PinboardConfig       
@@ -210,17 +210,17 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 
 
-connOpenRaw :: IO Manager
-connOpenRaw = withSocketsDo . newManager 
+mgrOpenRaw :: IO Manager
+mgrOpenRaw = withSocketsDo . newManager 
                 $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
-connOpen :: IO (Either SomeException Manager)
-connOpen = try connOpenRaw
+mgrOpen :: IO (Either SomeException Manager)
+mgrOpen = try mgrOpenRaw
 
-connClose :: Either a Manager -> IO ()
-connClose = either (const $ return ()) closeManager
+mgrClose :: Either a Manager -> IO ()
+mgrClose = either (const $ return ()) closeManager
 
-connFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
-connFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
+mgrFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
+mgrFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
 
 
