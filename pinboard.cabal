@@ -39,7 +39,6 @@ library
                      , bytestring
                      , containers
                      , either
-                     , haskell-src-exts
                      , http-types
                      , http-client
                      , http-client-tls

@@ -21,8 +21,8 @@ import Data.Text           (Text, words, unwords, unpack, pack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
 
-import Language.Haskell.Exts.Parser
-import Language.Haskell.Exts.Pretty
+-- import Language.Haskell.Exts.Parser
+-- import Language.Haskell.Exts.Pretty
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
 
@@ -284,15 +284,13 @@ instance FromJSON UpdateTime where
   parseJSON (Object o) = ToUpdateTime <$> (o .: "update_time")
   parseJSON _ = error "bad parse"
 
--- * Pretty
+-- prettyString :: String -> String
+-- prettyString s = case parseExp s of
+--     ParseOk x -> prettyPrint x
+--     ParseFailed{} -> s
 
-prettyString :: String -> String
-prettyString s = case parseExp s of
-    ParseOk x -> prettyPrint x
-    ParseFailed{} -> s
-
-pretty :: Show a => a -> String
-pretty = prettyString . show
+-- pretty :: Show a => a -> String
+-- pretty = prettyString . show
 
 -- * Aliases
 
