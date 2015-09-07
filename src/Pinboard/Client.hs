@@ -27,15 +27,15 @@ module Pinboard.Client
     , runPinboardSingleJson
       -- * Sending
     , sendPinboardRequest
-      -- * mgrections
+      -- *  Manager (http-client)
     , mgrOpenRaw
     , mgrOpen
-    , mgrClose
     , mgrFail
-     -- * JSON Streams
+     -- * JSON Handling
     ,parseJSONResponse
     ,decodeJSONResponse
      -- * Status Codes
+    ,checkStatusCodeResponse
     ,checkStatusCode
      -- * Error Helpers
     ,addErrMsg
@@ -54,25 +54,20 @@ import Control.Monad.Reader       (ask, runReaderT)
 import Control.Monad.Trans.Either (runEitherT, hoistEither)
 import Data.ByteString.Char8      (pack)
 import Data.Monoid                ((<>))
-import Data.Aeson                 (parseJSON, json', FromJSON, eitherDecodeStrict')
-import Data.Aeson.Types           (parseEither)
+import Data.Aeson                 (FromJSON, eitherDecodeStrict')
 
 import Network                    (withSocketsDo)
 import Network.HTTP.Types         (urlEncode)
+import Network.HTTP.Types.Status  (statusCode)
 
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
-import qualified Network.HTTP.Types.Method    as NHTM
-import qualified Network.HTTP.Types.Status    as NHTS
-import qualified Network.HTTP.Types.Header    as NHTH
-import qualified Network.HTTP.Types.URI       as NHTU
 
 
 import Pinboard.Client.Types
 import Pinboard.Client.Error
 import Pinboard.Client.Util
 
-import qualified Data.ByteString             as S
 import qualified Data.ByteString.Lazy        as LBS
 import qualified Data.Text                   as T
 import qualified Data.Text.Encoding          as T
@@ -92,7 +87,7 @@ runPinboard
     -> Pinboard a
     -> IO (Either PinboardError a)
 runPinboard config requests = 
-  bracket mgrOpen mgrClose (either (mgrFail ConnectionFailure) go)
+  bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
   where go mgr = runReaderT (runEitherT requests) (config, mgr) 
                   `catch` mgrFail UnknownErrorType
 
@@ -100,7 +95,7 @@ runPinboard config requests =
 pinboardJson :: FromJSON a => PinboardRequest -> Pinboard a
 pinboardJson req = do 
   (config, mgr)  <- ask
-  (_, result) <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
+  result <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
   hoistEither result
 
 
@@ -112,7 +107,7 @@ runPinboardSingleRaw
     -> (Response LBS.ByteString -> a)
     -> IO (Either PinboardError a)
 runPinboardSingleRaw config req handler = 
-  bracket mgrOpen mgrClose (either (mgrFail ConnectionFailure) go)
+  bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
     where go mgr = (Right <$> sendPinboardRequest req config mgr handler)
                     `catch` mgrFail UnknownErrorType
 
@@ -124,7 +119,7 @@ runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req id
   return $ do
     r <- res
-    responseBody r <$ checkStatusCode (NHTS.statusCode (responseStatus r))
+    responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
     :: FromJSON a
@@ -165,11 +160,11 @@ buildReq url = do
 parseJSONResponse
     :: (FromJSON a)
     => Response LBS.ByteString
-    -> (Response LBS.ByteString, Either PinboardError a)
+    -> Either PinboardError a
 parseJSONResponse response = 
-  (response, either (Left . addErrMsg (toText (responseBody response))) 
-                    (const $ decodeJSONResponse (responseBody response)) 
-                    (checkStatusCode (NHTS.statusCode (responseStatus response))))
+  either (Left . addErrMsg (toText (responseBody response))) 
+         (const $ decodeJSONResponse (responseBody response)) 
+         (checkStatusCodeResponse response)
 
 
 decodeJSONResponse
@@ -181,6 +176,9 @@ decodeJSONResponse s =
   in either (Left . createParserErr . toText) Right r
 
 --------------------------------------------------------------------------------
+
+checkStatusCodeResponse :: Response a -> Either PinboardError ()
+checkStatusCodeResponse = checkStatusCode . statusCode . responseStatus
 
 checkStatusCode :: Int -> Either PinboardError ()
 checkStatusCode = \case
@@ -216,9 +214,6 @@ mgrOpenRaw = withSocketsDo . newManager
 
 mgrOpen :: IO (Either SomeException Manager)
 mgrOpen = try mgrOpenRaw
-
-mgrClose :: Either a Manager -> IO ()
-mgrClose = either (const $ return ()) closeManager
 
 mgrFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
 mgrFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
