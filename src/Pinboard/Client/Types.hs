@@ -50,7 +50,11 @@ runPinboardT e f = runExceptT (runReaderT f e)
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
 type MonadPinboard m =
-  ( MonadIO m
+  ( Functor m
+  , Applicative m
+  , Monad m
+  , MonadIO m
+  , MonadIO m
   , MonadReader PinboardEnv m
   , MonadError PinboardError m
   )

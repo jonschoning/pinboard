@@ -155,7 +155,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.8.6")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.8.8")]
     , checkStatus = \_ _ _ -> Nothing
     }
 
