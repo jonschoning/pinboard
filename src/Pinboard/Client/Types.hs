@@ -35,6 +35,9 @@ import Network.HTTP.Client        (Manager)
 
 import Pinboard.Client.Error  (PinboardError (..))
 
+import Control.Applicative
+import Prelude
+
 ------------------------------------------------------------------------------
 
 type PinboardEnv = (PinboardConfig, Manager)
