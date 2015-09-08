@@ -91,14 +91,14 @@ runPinboard
     => PinboardConfig
     -> PinboardT m a
     -> m (Either PinboardError a)
-runPinboard config requests = either (mgrFail ConnectionFailure) go =<< mgrOpen
-  where go mgr = runReaderT (runExceptT requests) (config, mgr) 
+runPinboard config requests = mgrOpenRaw >>= go
+  where go mgr = runExceptT $ runReaderT requests (config, mgr) 
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a
 pinboardJson req = do 
   (config, mgr)  <- ask
-  res <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
+  res <- sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
   res
 
 --------------------------------------------------------------------------------
@@ -126,8 +126,7 @@ runPinboardSingleRawBS config req = do
     responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
-    :: MonadIO m
-    => FromJSON a
+    :: (MonadIO m, FromJSON a)
     => PinboardConfig       
     -> PinboardRequest
     -> m (Either PinboardError a)
@@ -157,7 +156,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.7.5")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.8.5")]
     , checkStatus = \_ _ _ -> Nothing
     }
 

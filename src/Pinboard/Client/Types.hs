@@ -32,13 +32,12 @@ import Control.Monad.Except(ExceptT)
 
 ------------------------------------------------------------------------------
 
-type PinboardT m a = ExceptT PinboardError (ReaderT (PinboardConfig, Manager) m) a
+type PinboardT m a = ReaderT (PinboardConfig, Manager) (ExceptT PinboardError m) a
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
 type MonadPinboard m =
-  ( Monad m
-  , MonadIO m
+  ( MonadIO m
   , MonadReader (PinboardConfig, Manager) m
   , MonadError PinboardError m
   )
