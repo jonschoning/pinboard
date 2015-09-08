@@ -2,6 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 ------------------------------------------------------------------------------
 -- | 
@@ -49,12 +51,14 @@ module Pinboard.Client
 
 
 import Control.Exception          (catch, SomeException, try, bracket)
-import Control.Monad.IO.Class     (MonadIO (liftIO))
-import Control.Monad.Reader       (ask, runReaderT)
-import Control.Monad.Trans.Either (runEitherT, hoistEither)
+import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Control.Monad.Except
+
 import Data.ByteString.Char8      (pack)
 import Data.Monoid                ((<>))
 import Data.Aeson                 (FromJSON, eitherDecodeStrict')
+
 
 import Network                    (withSocketsDo)
 import Network.HTTP.Types         (urlEncode)
@@ -88,15 +92,16 @@ runPinboard
     -> IO (Either PinboardError a)
 runPinboard config requests = 
   bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
-  where go mgr = runReaderT (runEitherT requests) (config, mgr) 
+  where go mgr = runReaderT (runExceptT requests) (config, mgr) 
                   `catch` mgrFail UnknownErrorType
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
-pinboardJson :: FromJSON a => PinboardRequest -> Pinboard a
+pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a
 pinboardJson req = do 
   (config, mgr)  <- ask
-  result <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
-  hoistEither result
+  res <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
+  res
+  
 
 
 --------------------------------------------------------------------------------
@@ -158,22 +163,22 @@ buildReq url = do
 --------------------------------------------------------------------------------
 
 parseJSONResponse
-    :: (FromJSON a)
+    :: (MonadError PinboardError m, FromJSON a)
     => Response LBS.ByteString
-    -> Either PinboardError a
+    -> m a
 parseJSONResponse response = 
-  either (Left . addErrMsg (toText (responseBody response))) 
+  either (throwError . addErrMsg (toText (responseBody response))) 
          (const $ decodeJSONResponse (responseBody response)) 
          (checkStatusCodeResponse response)
 
 
 decodeJSONResponse
-    :: FromJSON a 
+    :: (MonadError PinboardError m, FromJSON a) 
     => LBS.ByteString 
-    -> Either PinboardError a
+    -> m a
 decodeJSONResponse s = 
   let r = eitherDecodeStrict' (LBS.toStrict s) 
-  in either (Left . createParserErr . toText) Right r
+  in either (throwError . createParserErr . toText) (return . id) r
 
 --------------------------------------------------------------------------------
 

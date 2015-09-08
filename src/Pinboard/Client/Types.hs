@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -8,6 +10,7 @@
 -- Portability : POSIX
 module Pinboard.Client.Types
   ( Pinboard
+  , MonadPinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
   , ResultFormatType (..)
@@ -23,10 +26,24 @@ import Network.HTTP.Client        (Manager)
 import Pinboard.Client.Error  (PinboardError (..))
 import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
+import Control.Monad.Reader.Class(MonadReader)
+import Control.Monad.Error.Class(MonadError)
+import Control.Monad.IO.Class(MonadIO)
+import Control.Monad.Except(ExceptT)
+import Data.Functor.Identity(Identity)
 
 ------------------------------------------------------------------------------
 
-type Pinboard = EitherT PinboardError (ReaderT (PinboardConfig, Manager) IO)
+type Pinboard a = ExceptT PinboardError (ReaderT (PinboardConfig, Manager) IO) a
+
+-- |Typeclass alias for the return type of the API functions (keeps the
+-- signatures less verbose)
+type MonadPinboard m =
+  ( Monad m
+  , MonadIO m
+  , MonadReader (PinboardConfig, Manager) m
+  , MonadError PinboardError m
+  )
 
 ------------------------------------------------------------------------------
 
