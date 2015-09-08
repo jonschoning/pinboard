@@ -9,7 +9,7 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Pinboard.Client.Types
-  ( Pinboard
+  ( PinboardT
   , MonadPinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
@@ -19,7 +19,6 @@ module Pinboard.Client.Types
   ) where
 
 import Control.Monad.Reader       (ReaderT)
-import Control.Monad.Trans.Either (EitherT)
 import Data.ByteString            (ByteString)
 import Data.Text                  (Text)
 import Network.HTTP.Client        (Manager)
@@ -30,11 +29,10 @@ import Control.Monad.Reader.Class(MonadReader)
 import Control.Monad.Error.Class(MonadError)
 import Control.Monad.IO.Class(MonadIO)
 import Control.Monad.Except(ExceptT)
-import Data.Functor.Identity(Identity)
 
 ------------------------------------------------------------------------------
 
-type Pinboard a = ExceptT PinboardError (ReaderT (PinboardConfig, Manager) IO) a
+type PinboardT m a = ExceptT PinboardError (ReaderT (PinboardConfig, Manager) m) a
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)

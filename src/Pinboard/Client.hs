@@ -87,13 +87,12 @@ fromApiToken token = PinboardConfig { debug = False, apiToken = pack token }
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
 runPinboard
-    :: PinboardConfig
-    -> Pinboard a
-    -> IO (Either PinboardError a)
-runPinboard config requests = 
-  bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
+    :: MonadIO m
+    => PinboardConfig
+    -> PinboardT m a
+    -> m (Either PinboardError a)
+runPinboard config requests = either (mgrFail ConnectionFailure) go =<< mgrOpen
   where go mgr = runReaderT (runExceptT requests) (config, mgr) 
-                  `catch` mgrFail UnknownErrorType
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a
@@ -101,25 +100,25 @@ pinboardJson req = do
   (config, mgr)  <- ask
   res <- liftIO $ sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
   res
-  
-
 
 --------------------------------------------------------------------------------
 
 runPinboardSingleRaw
-    :: PinboardConfig       
+    :: MonadIO m
+    => PinboardConfig       
     -> PinboardRequest
     -> (Response LBS.ByteString -> a)
-    -> IO (Either PinboardError a)
+    -> m (Either PinboardError a)
 runPinboardSingleRaw config req handler = 
-  bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
+  liftIO $ bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
     where go mgr = (Right <$> sendPinboardRequest req config mgr handler)
                     `catch` mgrFail UnknownErrorType
 
 runPinboardSingleRawBS
-    :: PinboardConfig       
+    :: MonadIO m
+    => PinboardConfig       
     -> PinboardRequest
-    -> IO (Either PinboardError LBS.ByteString)
+    -> m (Either PinboardError LBS.ByteString)
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req id
   return $ do
@@ -127,34 +126,36 @@ runPinboardSingleRawBS config req = do
     responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
-    :: FromJSON a
+    :: MonadIO m
+    => FromJSON a
     => PinboardConfig       
     -> PinboardRequest
-    -> IO (Either PinboardError a)
+    -> m (Either PinboardError a)
 runPinboardSingleJson config = runPinboard config . pinboardJson
 
 
 --------------------------------------------------------------------------------
 
 sendPinboardRequest
-      :: PinboardRequest 
+      :: MonadIO m
+      => PinboardRequest 
       -> PinboardConfig 
       -> Manager
       -> (Response LBS.ByteString -> a)
-      -> IO a
+      -> m a
 sendPinboardRequest PinboardRequest{..} PinboardConfig{..} man handler = do
    let url = T.concat [ requestPath 
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq $ T.unpack url
-   res <- httpLbs req man
+   res <- liftIO $ httpLbs req man
    return $ handler res
 
 --------------------------------------------------------------------------------
 
-buildReq ::  String -> IO Request
+buildReq :: MonadIO m => String -> m Request
 buildReq url = do
-  req <- parseUrl $ "https://api.pinboard.in/v1/" <> url
+  req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
     { requestHeaders = [("User-Agent","pinboard.hs/0.7.5")]
     , checkStatus = \_ _ _ -> Nothing
@@ -213,14 +214,14 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 
 
-mgrOpenRaw :: IO Manager
-mgrOpenRaw = withSocketsDo . newManager 
+mgrOpenRaw :: MonadIO m => m Manager
+mgrOpenRaw = liftIO $ withSocketsDo . newManager 
                 $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
-mgrOpen :: IO (Either SomeException Manager)
-mgrOpen = try mgrOpenRaw
+mgrOpen :: MonadIO m => m (Either SomeException Manager)
+mgrOpen = liftIO $ try mgrOpenRaw
 
-mgrFail :: PinboardErrorType -> SomeException -> IO (Either PinboardError b)
+mgrFail :: MonadIO m => PinboardErrorType -> SomeException -> m (Either PinboardError b)
 mgrFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
 
 
