@@ -91,8 +91,8 @@ runPinboard
     => PinboardConfig
     -> PinboardT m a
     -> m (Either PinboardError a)
-runPinboard config requests = mgrOpenRaw >>= go
-  where go mgr = runExceptT $ runReaderT requests (config, mgr) 
+runPinboard config f = mgrOpenRaw >>= \mgr -> runPinboardT config mgr f
+
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a

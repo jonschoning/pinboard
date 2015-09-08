@@ -10,6 +10,7 @@
 -- Portability : POSIX
 module Pinboard.Client.Types
   ( PinboardT
+  , runPinboardT
   , MonadPinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
@@ -19,20 +20,30 @@ module Pinboard.Client.Types
   ) where
 
 import Control.Monad.Reader       (ReaderT)
+import Control.Monad.Reader.Class (MonadReader)
+import Control.Monad.Trans.Except (ExceptT, runExceptT)
+import Control.Monad.Trans.Reader (runReaderT)
+import Control.Monad.Error.Class  (MonadError)
+import Control.Monad.IO.Class     (MonadIO)
+
 import Data.ByteString            (ByteString)
 import Data.Text                  (Text)
-import Network.HTTP.Client        (Manager)
-import Pinboard.Client.Error  (PinboardError (..))
 import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
-import Control.Monad.Reader.Class(MonadReader)
-import Control.Monad.Error.Class(MonadError)
-import Control.Monad.IO.Class(MonadIO)
-import Control.Monad.Except(ExceptT)
+import Network.HTTP.Client        (Manager)
+
+import Pinboard.Client.Error  (PinboardError (..))
 
 ------------------------------------------------------------------------------
 
 type PinboardT m a = ReaderT (PinboardConfig, Manager) (ExceptT PinboardError m) a
+
+runPinboardT 
+  :: PinboardConfig 
+  -> Manager 
+  -> PinboardT m a
+  -> m (Either PinboardError a)
+runPinboardT config mgr f = runExceptT $ runReaderT f (config, mgr) 
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
