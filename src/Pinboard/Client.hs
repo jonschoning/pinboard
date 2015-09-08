@@ -126,7 +126,7 @@ runPinboardSingleRawBS config req = do
     responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
-    :: (MonadIO m, FromJSON a)
+    :: (Functor m, MonadIO m, FromJSON a)
     => PinboardConfig       
     -> PinboardRequest
     -> m (Either PinboardError a)
@@ -155,7 +155,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.8.9")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.8.10")]
     , checkStatus = \_ _ _ -> Nothing
     }
 
