@@ -9,7 +9,8 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Pinboard.Client.Types
-  ( PinboardT
+  ( PinboardEnv
+  , PinboardT
   , runPinboardT
   , MonadPinboard
   , PinboardRequest (..)
@@ -36,20 +37,21 @@ import Pinboard.Client.Error  (PinboardError (..))
 
 ------------------------------------------------------------------------------
 
-type PinboardT m a = ReaderT (PinboardConfig, Manager) (ExceptT PinboardError m) a
+type PinboardEnv = (PinboardConfig, Manager)
+
+type PinboardT m a = ReaderT PinboardEnv (ExceptT PinboardError m) a
 
 runPinboardT 
-  :: PinboardConfig 
-  -> Manager 
+  :: PinboardEnv
   -> PinboardT m a
   -> m (Either PinboardError a)
-runPinboardT config mgr f = runExceptT $ runReaderT f (config, mgr) 
+runPinboardT e f = runExceptT (runReaderT f e)
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
 type MonadPinboard m =
   ( MonadIO m
-  , MonadReader (PinboardConfig, Manager) m
+  , MonadReader PinboardEnv m
   , MonadError PinboardError m
   )
 

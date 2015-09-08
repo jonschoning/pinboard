@@ -1,3 +1,7 @@
+__v0.8.5__
+
+replace Pinboard stack with PinboardT transfomer (use mtl style constraints instead of a fixed monad transformer stack)
+
 __v0.7.5__
 
 replacing/removing io-streams in favor of http-client

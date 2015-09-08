@@ -50,7 +50,7 @@ module Pinboard.Client
     ) where
 
 
-import Control.Exception          (catch, SomeException, try, bracket)
+import Control.Exception          (catch, SomeException, try)
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Control.Monad.Except
@@ -91,14 +91,15 @@ runPinboard
     => PinboardConfig
     -> PinboardT m a
     -> m (Either PinboardError a)
-runPinboard config f = mgrOpenRaw >>= \mgr -> runPinboardT config mgr f
+runPinboard config f = mgrOpenRaw >>= go
+    where go mgr = runPinboardT (config, mgr) f
 
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a
 pinboardJson req = do 
-  (config, mgr)  <- ask
-  res <- sendPinboardRequest (ensureResultFormatType FormatJson req) config mgr parseJSONResponse
+  env <- ask
+  res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) parseJSONResponse
   res
 
 --------------------------------------------------------------------------------
@@ -109,9 +110,8 @@ runPinboardSingleRaw
     -> PinboardRequest
     -> (Response LBS.ByteString -> a)
     -> m (Either PinboardError a)
-runPinboardSingleRaw config req handler = 
-  liftIO $ bracket mgrOpen return (either (mgrFail ConnectionFailure) go)
-    where go mgr = (Right <$> sendPinboardRequest req config mgr handler)
+runPinboardSingleRaw config req handler = liftIO $ mgrOpenRaw >>= go
+  where go mgr = (Right <$> sendPinboardRequest (config, mgr) req handler)
                     `catch` mgrFail UnknownErrorType
 
 runPinboardSingleRawBS
@@ -137,12 +137,11 @@ runPinboardSingleJson config = runPinboard config . pinboardJson
 
 sendPinboardRequest
       :: MonadIO m
-      => PinboardRequest 
-      -> PinboardConfig 
-      -> Manager
+      => PinboardEnv
+      -> PinboardRequest 
       -> (Response LBS.ByteString -> a)
       -> m a
-sendPinboardRequest PinboardRequest{..} PinboardConfig{..} man handler = do
+sendPinboardRequest (PinboardConfig{..}, man) PinboardRequest{..} handler = do
    let url = T.concat [ requestPath 
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
@@ -156,7 +155,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.8.5")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.8.6")]
     , checkStatus = \_ _ _ -> Nothing
     }
 
