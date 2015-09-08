@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.8.10
+version:             0.9.0
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE

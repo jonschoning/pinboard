@@ -1,3 +1,7 @@
+__v0.9.0__
+
+refactored Client.hs to simplify parameters
+
 __v0.8.5__
 
 replace Pinboard stack with PinboardT transfomer (use mtl style constraints instead of a fixed monad transformer stack)

@@ -30,8 +30,7 @@ module Pinboard.Client
       -- * Sending
     , sendPinboardRequest
       -- *  Manager (http-client)
-    , mgrOpenRaw
-    , mgrOpen
+    , newMgr
     , mgrFail
      -- * JSON Handling
     ,parseJSONResponse
@@ -50,7 +49,7 @@ module Pinboard.Client
     ) where
 
 
-import Control.Exception          (catch, SomeException, try)
+import Control.Exception          (catch, SomeException)
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Control.Monad.Except
@@ -91,16 +90,19 @@ runPinboard
     => PinboardConfig
     -> PinboardT m a
     -> m (Either PinboardError a)
-runPinboard config f = mgrOpenRaw >>= go
+runPinboard config f = newMgr >>= go
     where go mgr = runPinboardT (config, mgr) f
 
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
-pinboardJson :: (MonadPinboard m, FromJSON a) => PinboardRequest -> m a
+pinboardJson 
+    :: (MonadPinboard m, FromJSON a) 
+    => PinboardRequest 
+    -> m a
 pinboardJson req = do 
   env <- ask
-  res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) parseJSONResponse
-  res
+  res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) 
+  parseJSONResponse res
 
 --------------------------------------------------------------------------------
 
@@ -108,10 +110,9 @@ runPinboardSingleRaw
     :: MonadIO m
     => PinboardConfig       
     -> PinboardRequest
-    -> (Response LBS.ByteString -> a)
-    -> m (Either PinboardError a)
-runPinboardSingleRaw config req handler = liftIO $ mgrOpenRaw >>= go
-  where go mgr = (Right <$> sendPinboardRequest (config, mgr) req handler)
+    -> m (Either PinboardError (Response LBS.ByteString))
+runPinboardSingleRaw config req = liftIO $ newMgr >>= go
+  where go mgr = (Right <$> sendPinboardRequest (config, mgr) req)
                     `catch` mgrFail UnknownErrorType
 
 runPinboardSingleRawBS
@@ -120,7 +121,7 @@ runPinboardSingleRawBS
     -> PinboardRequest
     -> m (Either PinboardError LBS.ByteString)
 runPinboardSingleRawBS config req = do
-  res <- runPinboardSingleRaw config req id
+  res <- runPinboardSingleRaw config req
   return $ do
     r <- res
     responseBody r <$ checkStatusCodeResponse r
@@ -139,15 +140,14 @@ sendPinboardRequest
       :: MonadIO m
       => PinboardEnv
       -> PinboardRequest 
-      -> (Response LBS.ByteString -> a)
-      -> m a
-sendPinboardRequest (PinboardConfig{..}, man) PinboardRequest{..} handler = do
+      -> m (Response LBS.ByteString)
+sendPinboardRequest (PinboardConfig{..}, mgr) PinboardRequest{..} = do
    let url = T.concat [ requestPath 
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq $ T.unpack url
-   res <- liftIO $ httpLbs req man
-   return $ handler res
+   res <- liftIO $ httpLbs req mgr
+   return res
 
 --------------------------------------------------------------------------------
 
@@ -155,7 +155,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.8.10")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.9.0")]
     , checkStatus = \_ _ _ -> Nothing
     }
 
@@ -212,12 +212,9 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 
 
-mgrOpenRaw :: MonadIO m => m Manager
-mgrOpenRaw = liftIO $ withSocketsDo . newManager 
+newMgr :: MonadIO m => m Manager
+newMgr = liftIO $ withSocketsDo . newManager 
                 $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
-
-mgrOpen :: MonadIO m => m (Either SomeException Manager)
-mgrOpen = liftIO $ try mgrOpenRaw
 
 mgrFail :: MonadIO m => PinboardErrorType -> SomeException -> m (Either PinboardError b)
 mgrFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
