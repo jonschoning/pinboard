@@ -43,9 +43,9 @@ module Pinboard.Client
     ,createParserErr
     ,httpStatusPinboardError
      -- * Client Dependencies
-    , module Pinboard.Client.Error
-    , module Pinboard.Client.Types
-    , module Pinboard.Client.Util
+    , module Pinboard.Error
+    , module Pinboard.Types
+    , module Pinboard.Util
     ) where
 
 
@@ -67,9 +67,9 @@ import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 
 
-import Pinboard.Client.Types
-import Pinboard.Client.Error
-import Pinboard.Client.Util
+import Pinboard.Types
+import Pinboard.Error
+import Pinboard.Util
 
 import qualified Data.ByteString.Lazy        as LBS
 import qualified Data.Text                   as T

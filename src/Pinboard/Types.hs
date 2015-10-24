@@ -3,12 +3,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
--- Module      : Pinboard.Client.Types
+-- Module      : Pinboard.Types
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Pinboard.Client.Types
+module Pinboard.Types
   ( PinboardEnv
   , PinboardT
   , runPinboardT
@@ -33,7 +33,7 @@ import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
 import Network.HTTP.Client        (Manager)
 
-import Pinboard.Client.Error  (PinboardError (..))
+import Pinboard.Error  (PinboardError (..))
 
 import Control.Applicative
 import Prelude
@@ -56,7 +56,6 @@ type MonadPinboard m =
   ( Functor m
   , Applicative m
   , Monad m
-  , MonadIO m
   , MonadIO m
   , MonadReader PinboardEnv m
   , MonadError PinboardError m

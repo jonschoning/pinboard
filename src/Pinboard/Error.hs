@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- |
--- Module      : Pinboard.Client.Error
+-- Module      : Pinboard.Error
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Pinboard.Client.Error 
+module Pinboard.Error 
     ( defaultPinboardError
     , PinboardErrorHTTPCode (..)
     , PinboardErrorType     (..)

@@ -28,7 +28,27 @@ main = do
     Right details -> print details
     Left pinboardError -> print pinboardError
 ```
+
+output:
+```
+Posts{postsDate = 2015 - 10 - 24 16 : 17 : 12 UTC,
+       postsUser = "jonschoning",
+       postsPosts =
+         [Post{postHref = "http://www.reddit.com/r/haskell/comments/25vj62/adventure_with_types_in_haskell_simon_peyton/",
+               postDescription = "Adventure with Types in Haskell - Simon Peyton Jones [1:33:36] : haskell",
+               postExtended = "", 
+               postMeta = "3fe9fb05c7c37f7bb66be7b9d85599eb",
+               postHash = "c46b717604ef8b126dabeba97b27a36f",
+               postTime = 2014 - 5 - 19 3 : 35 : 55 UTC, 
+               postShared = True,
+               postToread = False,
+               postTags = ["spj", "video", "haskell", "typetheory"]}]}
+```
 ## Modules
+
+[Pinboard.Types](https://hackage.haskell.org/package/pinboard/docs/Pinboard-Types.html)
+
+  Pinboard typeclasses and type aliases
 
 [Pinboard.Client](https://hackage.haskell.org/package/pinboard/docs/Pinboard-Client.html)
 

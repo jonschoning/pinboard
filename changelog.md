@@ -1,6 +1,7 @@
 __v0.9.0__
 
 refactored Client.hs to simplify parameters
+promote types under .Client subtree to top-level
 
 __v0.8.5__
 

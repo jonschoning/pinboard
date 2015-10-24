@@ -42,7 +42,7 @@ module Pinboard.Api
 import Pinboard.Client          (pinboardJson)
 import Data.Text                (Text)
 import Data.Time                (UTCTime)
-import Pinboard.Client.Types    (MonadPinboard, ResultFormatType (..))
+import Pinboard.Types    (MonadPinboard, ResultFormatType (..))
 import Pinboard.ApiTypes        
 import Pinboard.ApiRequest
 

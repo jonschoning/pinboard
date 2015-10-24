@@ -18,18 +18,6 @@ Description:
     library wraps the API exposing functions and data
     structures suitable for usage in Haskell programs.
     .
-    Example:
-    .
-    > import Pinboard
-    > 
-    > main :: IO ()
-    > main = do
-    >   let config = fromApiToken "api token"
-    >   result <- runPinboard config $ getPostsRecent Nothing Nothing
-    >   case result of
-    >     Right details -> print details
-    >     Left pinboardError -> print pinboardError
-    .
 Extra-Source-Files:
         README.md changelog.md
 library 
@@ -60,9 +48,9 @@ library
                        Pinboard.ApiRequest
                        Pinboard.ApiTypes 
                        Pinboard.Client
-                       Pinboard.Client.Error
-                       Pinboard.Client.Types
-                       Pinboard.Client.Util
+                       Pinboard.Error
+                       Pinboard.Types
+                       Pinboard.Util
   ghc-options:         -Wall -rtsopts
 
 source-repository head

@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 -- |
--- Module      : Pinboard.Client.Util
+-- Module      : Pinboard.Util
 -- Copyright   : (c) Jon Schoning, 2015
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Pinboard.Client.Util
+module Pinboard.Util
     ( 
       mkConfig
     , paramsToByteString
@@ -23,7 +23,7 @@ import           Data.String           (IsString)
 import           Data.Text             (Text)
 import qualified Data.Text             as T
 import qualified Data.Text.Encoding    as T
-import           Pinboard.Client.Types (PinboardRequest (..), PinboardConfig (..), ResultFormatType (..), Param (..), ParamsBS)
+import           Pinboard.Types (PinboardRequest (..), PinboardConfig (..), ResultFormatType (..), Param (..), ParamsBS)
 import Network.HTTP.Types(urlEncode)
 
 import Data.Monoid
