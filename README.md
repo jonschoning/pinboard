@@ -41,7 +41,7 @@ Posts{postsDate = 2015 - 10 - 24 16 : 17 : 12 UTC,
                postHash = "c46b717604ef8b126dabeba97b27a36f",
                postTime = 2014 - 5 - 19 3 : 35 : 55 UTC, 
                postShared = True,
-               postToread = False,
+               postToRead = False,
                postTags = ["spj", "video", "haskell", "typetheory"]}]}
 ```
 ## Modules
