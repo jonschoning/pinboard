@@ -66,7 +66,7 @@ data Post = Post {
     , postHash         :: Text
     , postTime         :: UTCTime
     , postShared       :: Bool
-    , postToread       :: Bool
+    , postToRead       :: Bool
     , postTags         :: [Tag]
     } deriving (Show, Eq, Data, Typeable, Ord)
 
@@ -92,7 +92,7 @@ instance ToJSON Post where
     , "hash"        .= toJSON postHash
     , "time"        .= toJSON postTime
     , "shared"      .= boolToYesNo postShared
-    , "toread"      .= boolToYesNo postToread
+    , "toread"      .= boolToYesNo postToRead
     , "tags"        .= unwords postTags ]
 
 boolFromYesNo :: Text -> Bool
