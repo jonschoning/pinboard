@@ -186,7 +186,7 @@ addPostRecRequest fmt Post{..} replace = addPostRequest fmt postHref
                                                             ( Just postTime     ) 
                                                             ( Just replace      ) 
                                                             ( Just postShared   ) 
-                                                            ( Just postToread   )
+                                                            ( Just postToRead   )
 
 -- TAGS ----------------------------------------------------------------------
 
