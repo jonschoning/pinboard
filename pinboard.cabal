@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.9.1
+version:             0.9.2
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE
@@ -52,6 +52,9 @@ library
                        Pinboard.Types
                        Pinboard.Util
   ghc-options:         -Wall -rtsopts
+                       -fwarn-incomplete-patterns
+                       -funbox-strict-fields
+                       -fexpose-all-unfoldings
 
 source-repository head
   type:     git

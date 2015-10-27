@@ -64,14 +64,13 @@ type MonadPinboard m =
 ------------------------------------------------------------------------------
 
 data PinboardRequest = PinboardRequest
-    { requestPath    :: Text   -- ^ url path of PinboardRequest
+    { requestPath    :: !Text   -- ^ url path of PinboardRequest
     , requestParams :: [Param] -- ^ Query Parameters of PinboardRequest
     } deriving Show
 
 ------------------------------------------------------------------------------
 data PinboardConfig = PinboardConfig
-    { apiToken :: ByteString
-    , debug :: Bool
+    { apiToken :: !ByteString
     } deriving Show
 
 ------------------------------------------------------------------------------
@@ -83,24 +82,24 @@ type ParamsBS = [(ByteString, ByteString)]
 data ResultFormatType = FormatJson | FormatXml
       deriving (Show, Eq)
 
-data Param = Format ResultFormatType
-           | Tag Text
-           | Tags Text
-           | Old Text
-           | New Text
-           | Count Int
-           | Start Int
-           | Results Int
-           | Url Text
-           | Date Day
-           | DateTime UTCTime
-           | FromDateTime UTCTime
-           | ToDateTime UTCTime
-           | Replace Bool
-           | Shared Bool
-           | ToRead Bool
-           | Description Text
-           | Extended Text
-           | Meta Int
+data Param = Format !ResultFormatType
+           | Tag !Text
+           | Tags !Text
+           | Old !Text
+           | New !Text
+           | Count !Int
+           | Start !Int
+           | Results !Int
+           | Url !Text
+           | Date !Day
+           | DateTime !UTCTime
+           | FromDateTime !UTCTime
+           | ToDateTime !UTCTime
+           | Replace !Bool
+           | Shared !Bool
+           | ToRead !Bool
+           | Description !Text
+           | Extended !Text
+           | Meta !Int
       deriving (Show, Eq)
 

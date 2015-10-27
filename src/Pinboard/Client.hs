@@ -81,7 +81,7 @@ import Prelude
 
 -- | Create a default PinboardConfig using the supplied apiToken
 fromApiToken :: String -> PinboardConfig
-fromApiToken token = PinboardConfig { debug = False, apiToken = pack token }
+fromApiToken token = PinboardConfig { apiToken = pack token }
 
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
@@ -155,7 +155,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
   return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.9.1")]
+    { requestHeaders = [("User-Agent","pinboard.hs/0.9.2")]
     , checkStatus = \_ _ _ -> Nothing
     }
 

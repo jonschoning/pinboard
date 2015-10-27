@@ -46,7 +46,7 @@ data PinboardErrorCode =
 ------------------------------------------------------------------------------
 data PinboardError = PinboardError {
       errorType  :: PinboardErrorType
-    , errorMsg   :: Text
+    , errorMsg   :: !Text
     , errorCode  :: Maybe PinboardErrorCode
     , errorParam :: Maybe Text
     , errorHTTP  :: Maybe PinboardErrorHTTPCode

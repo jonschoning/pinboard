@@ -32,7 +32,7 @@ import Prelude
 ------------------------------------------------------------------------------
 
 mkConfig :: PinboardConfig
-mkConfig = PinboardConfig { debug = False, apiToken = mempty }
+mkConfig = PinboardConfig { apiToken = mempty }
 
 ------------------------------------------------------------------------------
 -- | Conversion from a `Show` constrained type to `Text`

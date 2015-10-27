@@ -1,3 +1,7 @@
+__v0.9.2__
+
+Make data fields strict
+
 __v0.9.1__
 
 rename field: postToread -> postToRead

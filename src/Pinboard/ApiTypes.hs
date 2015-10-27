@@ -21,8 +21,6 @@ import Data.Text           (Text, words, unwords, unpack, pack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
 
--- import Language.Haskell.Exts.Parser
--- import Language.Haskell.Exts.Pretty
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
 
@@ -40,8 +38,8 @@ import Prelude hiding      (words, unwords)
 -- * Posts
 
 data Posts = Posts {
-      postsDate         :: UTCTime
-    , postsUser         :: Text
+      postsDate         :: !UTCTime
+    , postsUser         :: !Text
     , postsPosts        :: [Post]
     } deriving (Show, Eq, Data, Typeable, Ord)
 
@@ -59,14 +57,14 @@ instance ToJSON Posts where
     , "posts" .= toJSON postsPosts ]
 
 data Post = Post {
-      postHref         :: Text
-    , postDescription  :: Text
-    , postExtended     :: Text
-    , postMeta         :: Text
-    , postHash         :: Text
-    , postTime         :: UTCTime
-    , postShared       :: Bool
-    , postToRead       :: Bool
+      postHref         :: !Text
+    , postDescription  :: !Text
+    , postExtended     :: !Text
+    , postMeta         :: !Text
+    , postHash         :: !Text
+    , postTime         :: !UTCTime
+    , postShared       :: !Bool
+    , postToRead       :: !Bool
     , postTags         :: [Tag]
     } deriving (Show, Eq, Data, Typeable, Ord)
 
@@ -104,9 +102,9 @@ boolToYesNo True = "yes"
 boolToYesNo _    = "no"
 
 data PostDates = PostDates {
-      postDatesUser     :: Text
-    , postDatesTag      :: Text
-    , postDatesCount    :: [DateCount]
+      postDatesUser     :: !Text
+    , postDatesTag      :: !Text
+    , postDatesCount    :: [(Day, Int)]
     } deriving (Show, Eq, Data, Typeable, Ord)
 
 instance FromJSON PostDates where
@@ -135,7 +133,7 @@ type DateCount = (Day, Int)
 -- * Notes
 
 data NoteList = NoteList {
-      noteListCount     :: Int
+      noteListCount     :: !Int
     , noteListItems     :: [NoteListItem]
     } deriving (Show, Eq, Data, Typeable, Ord)
 
@@ -151,12 +149,12 @@ instance ToJSON NoteList where
     , "notes" .= toJSON noteListItems ]
 
 data NoteListItem = NoteListItem {
-      noteListItemId     :: Text
-    , noteListItemHash   :: Text
-    , noteListItemTitle  :: Text
-    , noteListItemLength :: Int
-    , noteListItemCreatedAt :: UTCTime
-    , noteListItemUpdatedAt :: UTCTime
+      noteListItemId     :: !Text
+    , noteListItemHash   :: !Text
+    , noteListItemTitle  :: !Text
+    , noteListItemLength :: !Int
+    , noteListItemCreatedAt :: !UTCTime
+    , noteListItemUpdatedAt :: !UTCTime
     } deriving (Show, Eq, Data, Typeable, Ord)
 
 instance FromJSON NoteListItem where
@@ -180,13 +178,13 @@ instance ToJSON NoteListItem where
 
 
 data Note = Note {
-      noteId     :: Text
-    , noteHash   :: Text
-    , noteTitle  :: Text
-    , noteText   :: Text
-    , noteLength :: Int
-    , noteCreatedAt :: UTCTime
-    , noteUpdatedAt :: UTCTime
+      noteId     :: !Text
+    , noteHash   :: !Text
+    , noteTitle  :: !Text
+    , noteText   :: !Text
+    , noteLength :: !Int
+    , noteCreatedAt :: !UTCTime
+    , noteUpdatedAt :: !UTCTime
     } deriving (Show, Eq, Data, Typeable, Ord)
 
 instance FromJSON Note where
