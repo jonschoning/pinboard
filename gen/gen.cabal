@@ -32,4 +32,5 @@ executable gen
                      , template-haskell >= 2.10
   hs-source-dirs:    .,
                      ../src
+  ghc-options:       -ddump-splices -rtsopts
   default-language:  Haskell2010
