@@ -1,6 +1,5 @@
 module LensUtil where
 
-import Pinboard.ApiTypes
 import Prelude
 import Control.Lens
 import Language.Haskell.TH

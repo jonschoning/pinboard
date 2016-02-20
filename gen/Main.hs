@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module LensGen where
+module Main where
 
 import LensUtil
 
