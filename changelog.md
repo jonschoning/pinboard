@@ -1,3 +1,7 @@
+__v0.9.3__
+
+Add lenses
+
 __v0.9.2__
 
 Make data fields strict

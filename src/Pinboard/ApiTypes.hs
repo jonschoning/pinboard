@@ -11,7 +11,7 @@
 -- Maintainer  : jonschoning@gmail.com
 -- Stability   : experimental
 -- Portability : POSIX
-module Pinboard.ApiTypes where
+module Pinboard.ApiTypes  where
 
 import Data.Aeson          
 import Data.Aeson.Types    (Parser)

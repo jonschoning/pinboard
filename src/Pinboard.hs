@@ -30,9 +30,13 @@ module Pinboard (
       -- * Pinboard.ApiTypes
       -- | Pinboard Data Structures returned by the Api
     , module Pinboard.ApiTypes
+      -- * Pinboard.ApiTypesLens
+      -- | Lens accessors for Pinboard.ApiTypes
+    , module Pinboard.ApiTypesLens
   ) where
 
 import Pinboard.Client
 import Pinboard.Api
 import Pinboard.ApiRequest
 import Pinboard.ApiTypes
+import Pinboard.ApiTypesLens

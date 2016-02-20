@@ -44,6 +44,30 @@ Posts{postsDate = 2015 - 10 - 24 16 : 17 : 12 UTC,
                postToRead = False,
                postTags = ["spj", "video", "haskell", "typetheory"]}]}
 ```
+
+### getPostsRecent (using Lenses)
+``` {.haskell}
+{-# LANGUAGE OverloadedStrings #-}
+
+import Pinboard
+import Control.Lens
+
+main :: IO ()
+main = do
+  let config = fromApiToken "api token"
+  result <- runPinboard config $ getPostsRecent (Just ["haskell"]) (Just 3)
+  mapM_ print (result ^.. _Right . postsPostsL . traverse . postHrefL)
+
+```
+
+output:
+```
+"http://www.stephendiehl.com/posts/production.html"
+"https://mail.haskell.org/mailman/listinfo"
+"https://en.wikibooks.org/wiki/Haskell/Applicative_functors#A_sliding_scale_of_power"
+```
+
+
 ## Modules
 
 [Pinboard.Types](https://hackage.haskell.org/package/pinboard/docs/Pinboard-Types.html)
@@ -61,3 +85,7 @@ Posts{postsDate = 2015 - 10 - 24 16 : 17 : 12 UTC,
 [Pinboard.ApiTypes](https://hackage.haskell.org/package/pinboard/docs/Pinboard-ApiTypes.html)
 
   Pinboard Data Structures returned by the Api
+
+[Pinboard.ApiTypesLens](https://hackage.haskell.org/package/pinboard/docs/Pinboard-ApiTypesLens.html)
+
+  Lens accessors for Pinboard.ApiTypes
