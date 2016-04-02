@@ -1,3 +1,7 @@
+__v0.9.4__
+
+derive generic
+
 __v0.9.3__
 
 Add lenses

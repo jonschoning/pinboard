@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -20,6 +21,7 @@ import Data.Data           (Data, Typeable)
 import Data.Text           (Text, words, unwords, unpack, pack)
 import Data.Time           (UTCTime)
 import Data.Time.Calendar  (Day)
+import GHC.Generics        (Generic)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
@@ -41,7 +43,7 @@ data Posts = Posts {
       postsDate         :: !UTCTime
     , postsUser         :: !Text
     , postsPosts        :: [Post]
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON Posts where
    parseJSON (Object o) =
@@ -66,7 +68,7 @@ data Post = Post {
     , postShared       :: !Bool
     , postToRead       :: !Bool
     , postTags         :: [Tag]
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON Post where
    parseJSON (Object o) =
@@ -105,7 +107,7 @@ data PostDates = PostDates {
       postDatesUser     :: !Text
     , postDatesTag      :: !Text
     , postDatesCount    :: [(Day, Int)]
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON PostDates where
    parseJSON (Object o) =
@@ -135,7 +137,7 @@ type DateCount = (Day, Int)
 data NoteList = NoteList {
       noteListCount     :: !Int
     , noteListItems     :: [NoteListItem]
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON NoteList where
    parseJSON (Object o) =
@@ -155,7 +157,7 @@ data NoteListItem = NoteListItem {
     , noteListItemLength :: !Int
     , noteListItemCreatedAt :: !UTCTime
     , noteListItemUpdatedAt :: !UTCTime
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON NoteListItem where
    parseJSON (Object o) =
@@ -185,7 +187,7 @@ data Note = Note {
     , noteLength :: !Int
     , noteCreatedAt :: !UTCTime
     , noteUpdatedAt :: !UTCTime
-    } deriving (Show, Eq, Data, Typeable, Ord)
+    } deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON Note where
    parseJSON (Object o) =
@@ -225,7 +227,7 @@ showNoteTime = formatTime defaultTimeLocale "%F %T"
 type TagMap = HashMap Tag Int
 
 newtype JsonTagMap = ToJsonTagMap {fromJsonTagMap :: TagMap}
-    deriving (Show, Eq, Data, Typeable)
+  deriving (Show, Eq, Data, Typeable, Generic)
 
 instance FromJSON JsonTagMap where
   parseJSON = return . toTags
@@ -238,7 +240,7 @@ instance ToJSON JsonTagMap where
 
 data Suggested = Popular [Text]
                | Recommended [Text]
-    deriving (Show, Eq, Data, Typeable, Ord)
+    deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON Suggested where
    parseJSON (Object o)
@@ -258,7 +260,7 @@ instance ToJSON Suggested where
 -- * Scalars
 
 newtype DoneResult = ToDoneResult {fromDoneResult :: ()}
-    deriving (Show, Eq, Data, Typeable, Ord)
+    deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON DoneResult where
   parseJSON (Object o) = parseDone =<< (o .: "result" <|> o .: "result_code")
@@ -269,14 +271,14 @@ instance FromJSON DoneResult where
   parseJSON _ = error "bad parse"
 
 newtype TextResult = ToTextResult {fromTextResult :: Text}
-    deriving (Show, Eq, Data, Typeable, Ord)
+    deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON TextResult where
   parseJSON (Object o) = ToTextResult <$> (o .: "result")
   parseJSON _ = error "bad parse"
 
 newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
-    deriving (Show, Eq, Data, Typeable, Ord)
+    deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON UpdateTime where
   parseJSON (Object o) = ToUpdateTime <$> (o .: "update_time")

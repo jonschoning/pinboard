@@ -441,6 +441,7 @@ popularP
            (Popular y1_acHt) -> Right y1_acHt
            _ -> Left x_acHs) 
           (either pure (fmap Popular)) . right'
+{-# INLINE popularP #-}
       
 
 recommendedP :: Prism_' Suggested [Text]
@@ -449,4 +450,5 @@ recommendedP
            (Recommended y1_acHw) -> Right y1_acHw
            _ -> Left x_acHv)
           (either pure (fmap Recommended)) . right' 
+{-# INLINE recommendedP #-}
 
