@@ -43,9 +43,7 @@ module Pinboard.Client
     ,createParserErr
     ,httpStatusPinboardError
      -- * Client Dependencies
-    , module Pinboard.Error
-    , module Pinboard.Types
-    , module Pinboard.Util
+    , module X
     ) where
 
 
@@ -67,9 +65,9 @@ import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 
 
-import Pinboard.Types
-import Pinboard.Error
-import Pinboard.Util
+import Pinboard.Types as X
+import Pinboard.Error as X
+import Pinboard.Util as X
 
 import qualified Data.ByteString.Lazy        as LBS
 import qualified Data.Text                   as T
@@ -127,7 +125,7 @@ runPinboardSingleRawBS config req = do
     responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
-    :: (Functor m, MonadIO m, FromJSON a)
+    :: (MonadIO m, FromJSON a)
     => PinboardConfig       
     -> PinboardRequest
     -> m (Either PinboardError a)
@@ -146,8 +144,7 @@ sendPinboardRequest (PinboardConfig{..}, mgr) PinboardRequest{..} = do
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq $ T.unpack url
-   res <- liftIO $ httpLbs req mgr
-   return res
+   liftIO $ httpLbs req mgr
 
 --------------------------------------------------------------------------------
 
@@ -177,7 +174,7 @@ decodeJSONResponse
     -> m a
 decodeJSONResponse s = 
   let r = eitherDecodeStrict' (LBS.toStrict s) 
-  in either (throwError . createParserErr . toText) (return . id) r
+  in either (throwError . createParserErr . toText) return r
 
 --------------------------------------------------------------------------------
 
