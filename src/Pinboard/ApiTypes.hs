@@ -206,7 +206,7 @@ instance ToJSON Note where
     , "hash"       .= toJSON noteHash
     , "title"      .= toJSON noteTitle
     , "text"       .= toJSON noteText
-    , "length"     .= toJSON (show noteLength)
+    , "length"     .= toJSON noteLength
     , "created_at" .= toJSON (showNoteTime noteCreatedAt)
     , "updated_at" .= toJSON (showNoteTime noteUpdatedAt) ]
 
