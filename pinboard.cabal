@@ -60,8 +60,12 @@ library
 test-suite tests
   ghc-options: -Wall -fno-warn-orphans
   type: exitcode-stdio-1.0
-  main-is: tests.hs
+  main-is: Test.hs
   hs-source-dirs: tests
+  other-modules:     
+                       ApproxEq
+                       Instances
+                       PropJSON
   build-depends:       base >=4.6 && < 5.0,
                        pinboard,
                        bytestring,

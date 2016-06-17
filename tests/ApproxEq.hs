@@ -66,3 +66,6 @@ instance (ApproxEq l, ApproxEq r) => ApproxEq (Either l r) where
   Left a =~ Left b = a =~ b
   Right a =~ Right b = a =~ b
   _ =~ _ = False
+
+instance (ApproxEq l, ApproxEq r) => ApproxEq (l, r) where
+  (=~) (l1,r1) (l2,r2) = l1 =~ l2 && r1 =~ r2 

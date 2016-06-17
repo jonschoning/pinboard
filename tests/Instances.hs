@@ -1,44 +1,16 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
+module Instances where
 
-module Main where
-
-import           Data.Aeson
-import           Data.Aeson.Types (parseEither)
-import           Data.Char (isSpace)
-import           Data.Monoid
 import           Data.Text (Text, pack)
-import           Data.List
-import           Data.Ord
+import           Data.Char (isSpace)
+import           Data.List (sort)
 import           Data.Time.Calendar (Day(..))
 import           Data.Time.Clock (UTCTime(..), secondsToDiffTime)
-import           Data.Typeable
-import           Test.Hspec
-import           Test.Hspec.QuickCheck (prop)
 import           Test.QuickCheck
-import qualified Data.ByteString.Lazy.Char8 as BL8
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Set as Set
 
 import ApproxEq
-
-import           Pinboard
-
-propJSON :: forall a b. (Arbitrary a, ToJSON a, FromJSON a, Show a, Typeable a, Testable b) 
-         => (Either String a -> Either String a -> b) 
-         -> Proxy a 
-         -> Spec
-propJSON eq _ = prop (show (typeOf (undefined :: a)) <> " FromJSON/ToJSON roundtrip") $ \(x :: a) ->
-  let actual = parseEither parseJSON (toJSON x)
-      expected = Right x
-      failMsg = "ACTUAL: " <> show actual <> "\nJSON: " <> BL8.unpack (encode x)
-  in counterexample failMsg (actual `eq` expected)
-
-propJSONEq :: forall a. (Arbitrary a, ToJSON a, FromJSON a, Show a, Typeable a, Eq a) => Proxy a -> Spec
-propJSONEq = propJSON (==)
-
-propJSONApproxEq :: forall a. (Arbitrary a, ToJSON a, FromJSON a, Show a, Typeable a, ApproxEq a) => Proxy a -> Spec
-propJSONApproxEq = propJSON (==~)
+import Pinboard
 
 instance Arbitrary Text where
   arbitrary = pack <$> arbitrary
@@ -71,7 +43,7 @@ instance Arbitrary NoteListItem where
                            <*> arbitrary
 
 instance Arbitrary Posts where
-  arbitrary = Posts <$> arbitrary <*> arbitrary <*> (resize 15 arbitrary)
+  arbitrary = Posts <$> arbitrary <*> arbitrary <*> resize 15 arbitrary
 
 instance Arbitrary Post where
   arbitrary = Post <$> arbitrary
@@ -85,7 +57,7 @@ instance Arbitrary Post where
                    <*> arbitraryTags
 
 instance Arbitrary JsonTagMap where
-  arbitrary = ToJsonTagMap <$> (HM.fromList <$> (listOf $ (,) <$> arbitraryTag <*> arbitrary))
+  arbitrary = ToJsonTagMap <$> (HM.fromList <$> listOf ((,) <$> arbitraryTag <*> arbitrary))
 
 arbitraryTags :: Gen [Tag]
 arbitraryTags = listOf arbitraryTag
@@ -109,26 +81,12 @@ instance Arbitrary PostDates where
     where
       isValidDateCount xs = hasNoDups (fst <$> xs) && all (> 0) (snd <$> xs)
 
+instance ApproxEq Day where (=~) = (==)
 instance ApproxEq PostDates where
   (=~) a b =
-    postDatesUser a == postDatesUser b
-    && postDatesTag a == postDatesTag b
-    && sorted (postDatesCount a) == sorted (postDatesCount b)
-    where sorted = sortBy (comparing fst <> comparing snd)
+    postDatesUser a =~ postDatesUser b
+    && postDatesTag a =~ postDatesTag b
+    && sort (postDatesCount a) =~ sort (postDatesCount b)
 
 instance Arbitrary Suggested where
   arbitrary = arbitrary >>= \a -> elements [Popular a, Recommended a]
-
-main :: IO ()
-main = hspec $ do
-  prop "UTCTime" $ \(x :: UTCTime) -> (readNoteTime . showNoteTime) x == x
-  describe "JSON instances" $ do
-    propJSONEq (Proxy :: Proxy UTCTime)
-    propJSONEq (Proxy :: Proxy Post)
-    propJSONEq (Proxy :: Proxy Posts)
-    propJSONEq (Proxy :: Proxy Note)
-    propJSONEq (Proxy :: Proxy NoteList)
-    propJSONEq (Proxy :: Proxy NoteListItem)
-    propJSONEq (Proxy :: Proxy JsonTagMap)
-    propJSONEq (Proxy :: Proxy Suggested)
-    propJSONApproxEq (Proxy :: Proxy PostDates)
