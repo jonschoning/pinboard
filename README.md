@@ -1,4 +1,4 @@
-# Pinboard [![Hackage](https://img.shields.io/hackage/v/pinboard.svg?style=flat)](https://hackage.haskell.org/package/pinboard) [![TravisCi](https://travis-ci.org/jonschoning/pinboard.svg?branch=master)](https://travis-ci.org/jonschoning/pinboard)
+# Pinboard [![Hackage](https://img.shields.io/hackage/v/pinboard.svg?style=flat)](https://hackage.haskell.org/package/pinboard) [![Build Status](https://travis-ci.org/jonschoning/pinboard.svg?branch=master)](https://travis-ci.org/jonschoning/pinboard)
 
 The Pinboard API is a way to interact programatically with
 your bookmarks, notes and other Pinboard data. This
