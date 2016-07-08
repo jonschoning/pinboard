@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.9.5
+version:             0.9.6
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE
@@ -28,7 +28,7 @@ library
                      , containers
                      , either
                      , http-types
-                     , http-client
+                     , http-client < 0.5.0
                      , http-client-tls
                      , mtl >= 2.2.1
                      , old-locale
