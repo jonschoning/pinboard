@@ -4,7 +4,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE CPP #-}
 
 -- |
 -- Module      : Pinboard.ApiTypes
@@ -25,14 +24,7 @@ import GHC.Generics        (Generic)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
-
-#if MIN_VERSION_time(1,5,0)
 import Data.Time.Format    (parseTimeOrError, formatTime, defaultTimeLocale)
-#else
-import Data.Time.Format    (readTime, formatTime)
-import System.Locale       (defaultTimeLocale)
-#endif
-
 import Control.Applicative 
 import Prelude hiding      (words, unwords)
 
@@ -213,11 +205,7 @@ instance ToJSON Note where
 readNoteTime :: String -> UTCTime
 readNoteTime = parse' defaultTimeLocale "%F %T"
   where
-#if MIN_VERSION_time(1,5,0)
     parse' = parseTimeOrError True
-#else
-    parse' = readTime
-#endif
 
 showNoteTime :: UTCTime -> String
 showNoteTime = formatTime defaultTimeLocale "%F %T"

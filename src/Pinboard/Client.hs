@@ -150,10 +150,9 @@ sendPinboardRequest (PinboardConfig{..}, mgr) PinboardRequest{..} = do
 
 buildReq :: MonadIO m => String -> m Request
 buildReq url = do
-  req <- liftIO $ parseUrl $ "https://api.pinboard.in/v1/" <> url
-  return $ req 
-    { requestHeaders = [("User-Agent","pinboard.hs/0.9.6")]
-    , checkStatus = \_ _ _ -> Nothing
+  req <- liftIO $ parseRequest $ "https://api.pinboard.in/v1/" <> url
+  return $ setRequestIgnoreStatus $ req { 
+    requestHeaders = [("User-Agent","pinboard.hs/0.9.7")]
     }
 
 --------------------------------------------------------------------------------

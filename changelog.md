@@ -1,3 +1,9 @@
+__v0.9.7__
+
+add http-client-0.5.0 support
+
+add PVP bounds
+
 __v0.9.6__
 
 add http-client bound
