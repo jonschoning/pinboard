@@ -110,10 +110,9 @@ runPinboardSingleRaw
     :: MonadIO m
     => PinboardConfig       
     -> PinboardRequest
-    -> m (Either PinboardError (Response LBS.ByteString))
+    -> m (Response LBS.ByteString)
 runPinboardSingleRaw config req = liftIO $ newMgr >>= go
-  where go mgr = (Right <$> sendPinboardRequest (config, mgr) req)
-                    `catch` mgrFail UnknownErrorType
+  where go mgr = sendPinboardRequest (config, mgr) req
 
 runPinboardSingleRawBS
     :: MonadIO m
@@ -122,9 +121,7 @@ runPinboardSingleRawBS
     -> m (Either PinboardError LBS.ByteString)
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
-  return $ do
-    r <- res
-    responseBody r <$ checkStatusCodeResponse r
+  return $ responseBody res <$ checkStatusCodeResponse res
 
 runPinboardSingleJson
     :: (MonadIO m, MonadCatch m, FromJSON a)
