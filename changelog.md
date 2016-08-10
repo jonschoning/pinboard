@@ -1,3 +1,7 @@
+__v0.9.8__
+
+use safe-exception
+
 __v0.9.7__
 
 add http-client-0.5.0 support

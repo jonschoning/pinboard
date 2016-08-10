@@ -47,10 +47,12 @@ module Pinboard.Client
     ) where
 
 
-import Control.Exception          (catch, SomeException)
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Control.Monad.Except
+
+import Control.Exception          (catch, SomeException)
+
 
 import Data.ByteString.Char8      (pack)
 import Data.Monoid                ((<>))
@@ -152,7 +154,7 @@ buildReq :: MonadIO m => String -> m Request
 buildReq url = do
   req <- liftIO $ parseRequest $ "https://api.pinboard.in/v1/" <> url
   return $ setRequestIgnoreStatus $ req { 
-    requestHeaders = [("User-Agent","pinboard.hs/0.9.7")]
+    requestHeaders = [("User-Agent","pinboard.hs/0.9.8")]
     }
 
 --------------------------------------------------------------------------------

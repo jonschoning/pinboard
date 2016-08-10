@@ -107,7 +107,7 @@ deletePost
   :: MonadPinboard m
   => Url
   -> m ()
-deletePost url = fromDoneResult <$> (pinboardJson $ deletePostRequest FormatJson url)
+deletePost url = fromDoneResult <$> pinboardJson (deletePostRequest FormatJson url)
 
 -- | posts/add : Add or Update a bookmark
 addPost
@@ -121,7 +121,7 @@ addPost
   -> Maybe Shared   -- ^ Make bookmark public. Default is "yes" unless user has enabled the "save all bookmarks as private" user setting, in which case default is "no"
   -> Maybe ToRead   -- ^ Marks the bookmark as unread. Default is "no"
   -> m ()
-addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> (pinboardJson $ addPostRequest FormatJson url descr ext tags ctime repl shared toread)
+addPost url descr ext tags ctime repl shared toread = fromDoneResult <$> pinboardJson (addPostRequest FormatJson url descr ext tags ctime repl shared toread)
 
 -- | posts/add :  Add or Update a bookmark, from a Post record
 addPostRec
@@ -129,7 +129,7 @@ addPostRec
   => Post         -- ^ a Post record
   -> Replace      -- ^ Replace any existing bookmark with the Posts URL. If set to no, will fail if bookmark exists 
   -> m ()
-addPostRec post replace = fromDoneResult <$> (pinboardJson $ addPostRecRequest FormatJson post replace)
+addPostRec post replace = fromDoneResult <$> pinboardJson (addPostRecRequest FormatJson post replace)
 
 -- TAGS ----------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ addPostRec post replace = fromDoneResult <$> (pinboardJson $ addPostRecRequest F
 getTags 
   :: MonadPinboard m
   => m TagMap
-getTags = fromJsonTagMap <$> (pinboardJson $ getTagsRequest FormatJson )
+getTags = fromJsonTagMap <$> pinboardJson (getTagsRequest FormatJson)
 
 
 -- | tags/delete : Delete an existing tag.
@@ -147,7 +147,7 @@ deleteTag
   :: MonadPinboard m
   => Tag 
   -> m ()
-deleteTag tag = fromDoneResult <$> (pinboardJson $ deleteTagRequest FormatJson tag)
+deleteTag tag = fromDoneResult <$> pinboardJson (deleteTagRequest FormatJson tag)
 
 
 -- | tags/rename : Rename an tag, or fold it in to an existing tag
@@ -156,7 +156,7 @@ renameTag
   => Old -- ^ note: match is not case sensitive
   -> New -- ^ if empty, nothing will happen
   -> m ()
-renameTag old new = fromDoneResult <$> (pinboardJson $ renameTagRequest FormatJson old new)
+renameTag old new = fromDoneResult <$> pinboardJson (renameTagRequest FormatJson old new)
 
 
 -- USER ----------------------------------------------------------------------
@@ -165,13 +165,13 @@ renameTag old new = fromDoneResult <$> (pinboardJson $ renameTagRequest FormatJs
 getUserSecretRssKey 
   :: MonadPinboard m
   => m Text
-getUserSecretRssKey = fromTextResult <$> (pinboardJson $ getUserSecretRssKeyRequest FormatJson )
+getUserSecretRssKey = fromTextResult <$> pinboardJson (getUserSecretRssKeyRequest FormatJson)
 
 -- | user/api_token : Returns the user's API token (for making API calls without a password)
 getUserApiToken 
   :: MonadPinboard m
   => m Text
-getUserApiToken = fromTextResult <$> (pinboardJson $ getUserApiTokenRequest FormatJson )
+getUserApiToken = fromTextResult <$> pinboardJson (getUserApiTokenRequest FormatJson)
 
 
 -- NOTES ---------------------------------------------------------------------
