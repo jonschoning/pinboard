@@ -51,6 +51,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader
 
 import Control.Exception.Safe
+import Control.Monad.Error.Class  (throwError)
 
 
 import Data.ByteString.Char8      (pack)
@@ -101,7 +102,7 @@ pinboardJson
 pinboardJson req = do 
   env <- ask
   res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) 
-  either throw return $ parseJSONResponse res
+  either throwError return (parseJSONResponse res)
 
 --------------------------------------------------------------------------------
 

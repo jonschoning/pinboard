@@ -33,6 +33,7 @@ import Data.Time.Clock(UTCTime)
 import Network.HTTP.Client        (Manager)
 
 import Pinboard.Error  (PinboardError (..))
+import Control.Monad.Error.Class  (MonadError)
 
 import Control.Applicative
 import Control.Exception.Safe
@@ -59,6 +60,8 @@ type MonadPinboard m =
   , MonadIO m
   , MonadReader PinboardEnv m
   , MonadThrow m
+  , MonadCatch m
+  , MonadError PinboardError m
   )
 
 ------------------------------------------------------------------------------
