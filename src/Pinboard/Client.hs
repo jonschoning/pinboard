@@ -90,9 +90,8 @@ runPinboard
     -> PinboardT m a
     -> m (Either PinboardError a)
 runPinboard config f = newMgr >>= go 
-    where go mgr = runPinboardT (config, mgr) f
-                   `catch` \(e::PinboardError) -> return (Left e)
-
+    where go mgr = pinboardErrorToEither $ runPinboardT (config, mgr) f
+                   
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson 

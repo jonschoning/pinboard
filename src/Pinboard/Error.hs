@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 -- |
 -- Module      : Pinboard.Error
@@ -6,7 +7,8 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Pinboard.Error 
-    ( defaultPinboardError
+    ( defaultPinboardError,
+      pinboardErrorToEither
     , PinboardErrorHTTPCode (..)
     , PinboardErrorType     (..)
     , PinboardErrorCode     (..)
@@ -18,7 +20,7 @@ import Data.Text (Text)
 import Data.Monoid
 import Prelude
 
-import Control.Exception
+import Control.Exception.Safe
 ------------------------------------------------------------------------------
 data PinboardErrorHTTPCode = 
           BadRequest        -- ^ 400
@@ -57,3 +59,6 @@ instance Exception PinboardError
 
 defaultPinboardError :: PinboardError
 defaultPinboardError = PinboardError UnknownErrorType mempty Nothing Nothing Nothing 
+
+pinboardErrorToEither :: MonadCatch m => m (Either PinboardError a) -> m (Either PinboardError a)
+pinboardErrorToEither = handle (\(e::PinboardError) -> return (Left e))
