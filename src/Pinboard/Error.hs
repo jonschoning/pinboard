@@ -18,6 +18,7 @@ import Data.Text (Text)
 import Data.Monoid
 import Prelude
 
+import Control.Exception
 ------------------------------------------------------------------------------
 data PinboardErrorHTTPCode = 
           BadRequest        -- ^ 400
@@ -51,6 +52,8 @@ data PinboardError = PinboardError {
     , errorParam :: Maybe Text
     , errorHTTP  :: Maybe PinboardErrorHTTPCode
     } deriving Show
+
+instance Exception PinboardError
 
 defaultPinboardError :: PinboardError
 defaultPinboardError = PinboardError UnknownErrorType mempty Nothing Nothing Nothing 

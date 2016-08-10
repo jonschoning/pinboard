@@ -24,7 +24,6 @@ import Control.Monad.Reader       (ReaderT)
 import Control.Monad.Reader.Class (MonadReader)
 import Control.Monad.Trans.Except (ExceptT, runExceptT)
 import Control.Monad.Trans.Reader (runReaderT)
-import Control.Monad.Error.Class  (MonadError)
 import Control.Monad.IO.Class     (MonadIO)
 
 import Data.ByteString            (ByteString)
@@ -36,6 +35,7 @@ import Network.HTTP.Client        (Manager)
 import Pinboard.Error  (PinboardError (..))
 
 import Control.Applicative
+import Control.Exception.Safe
 import Prelude
 
 ------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ type MonadPinboard m =
   , Monad m
   , MonadIO m
   , MonadReader PinboardEnv m
-  , MonadError PinboardError m
+  , MonadThrow m
   )
 
 ------------------------------------------------------------------------------

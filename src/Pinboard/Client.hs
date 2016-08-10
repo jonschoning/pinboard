@@ -49,9 +49,8 @@ module Pinboard.Client
 
 import Control.Monad.IO.Class
 import Control.Monad.Reader
-import Control.Monad.Except
 
-import Control.Exception          (catch, SomeException)
+import Control.Exception.Safe
 
 
 import Data.ByteString.Char8      (pack)
@@ -127,7 +126,7 @@ runPinboardSingleRawBS config req = do
     responseBody r <$ checkStatusCodeResponse r
 
 runPinboardSingleJson
-    :: (MonadIO m, FromJSON a)
+    :: (MonadIO m, MonadCatch m, FromJSON a)
     => PinboardConfig       
     -> PinboardRequest
     -> m (Either PinboardError a)
@@ -160,22 +159,22 @@ buildReq url = do
 --------------------------------------------------------------------------------
 
 parseJSONResponse
-    :: (MonadError PinboardError m, FromJSON a)
+    :: (MonadThrow m, FromJSON a)
     => Response LBS.ByteString
     -> m a
 parseJSONResponse response = 
-  either (throwError . addErrMsg (toText (responseBody response))) 
+  either (throw . addErrMsg (toText (responseBody response))) 
          (const $ decodeJSONResponse (responseBody response)) 
          (checkStatusCodeResponse response)
 
 
 decodeJSONResponse
-    :: (MonadError PinboardError m, FromJSON a) 
+    :: (MonadThrow m, FromJSON a) 
     => LBS.ByteString 
     -> m a
 decodeJSONResponse s = 
   let r = eitherDecodeStrict' (LBS.toStrict s) 
-  in either (throwError . createParserErr . toText) return r
+  in either (throw . createParserErr . toText) return r
 
 --------------------------------------------------------------------------------
 
@@ -214,7 +213,7 @@ newMgr :: MonadIO m => m Manager
 newMgr = liftIO $ withSocketsDo . newManager 
                 $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
-mgrFail :: MonadIO m => PinboardErrorType -> SomeException -> m (Either PinboardError b)
+mgrFail :: Monad m => PinboardErrorType -> SomeException -> m (Either PinboardError b)
 mgrFail e msg = return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing
 
 
