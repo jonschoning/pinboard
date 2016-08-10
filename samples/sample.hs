@@ -8,4 +8,4 @@ main = do
   result <- runPinboard config $ getPostsRecent Nothing Nothing
   case result of
     Right details -> print details
-    Left pinboardError -> print pinboardError
+    Left pinboardError -> print ("L: " ++ show pinboardError)

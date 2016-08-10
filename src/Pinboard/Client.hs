@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
@@ -51,8 +52,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader
 
 import Control.Exception.Safe
-import Control.Monad.Error.Class  (throwError)
-
 
 import Data.ByteString.Char8      (pack)
 import Data.Monoid                ((<>))
@@ -86,12 +85,13 @@ fromApiToken token = PinboardConfig { apiToken = pack token }
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
 runPinboard
-    :: MonadIO m
+    :: (MonadIO m, MonadCatch m)
     => PinboardConfig
     -> PinboardT m a
     -> m (Either PinboardError a)
-runPinboard config f = newMgr >>= go
+runPinboard config f = newMgr >>= go 
     where go mgr = runPinboardT (config, mgr) f
+                   `catch` \(e::PinboardError) -> return (Left e)
 
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
@@ -102,7 +102,7 @@ pinboardJson
 pinboardJson req = do 
   env <- ask
   res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) 
-  either throwError return (parseJSONResponse res)
+  either throw return (parseJSONResponse res)
 
 --------------------------------------------------------------------------------
 
