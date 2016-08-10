@@ -37,7 +37,7 @@ data PinboardErrorType =
         | HttpStatusFailure
         | ParseFailure
         | UnknownErrorType 
-          deriving Show
+          deriving (Eq, Show)
 
 ------------------------------------------------------------------------------
 data PinboardErrorCode =

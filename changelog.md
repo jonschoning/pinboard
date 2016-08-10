@@ -1,6 +1,7 @@
 __v0.9.8__
 
 use safe-exception
+avoid use of 'error' to communicate failure when parsing json
 
 __v0.9.7__
 

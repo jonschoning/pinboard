@@ -101,7 +101,7 @@ pinboardJson
 pinboardJson req = do 
   env <- ask
   res <- sendPinboardRequest env (ensureResultFormatType FormatJson req) 
-  parseJSONResponse res
+  either throw return $ parseJSONResponse res
 
 --------------------------------------------------------------------------------
 
@@ -159,22 +159,22 @@ buildReq url = do
 --------------------------------------------------------------------------------
 
 parseJSONResponse
-    :: (MonadThrow m, FromJSON a)
+    :: FromJSON a
     => Response LBS.ByteString
-    -> m a
+    -> Either PinboardError a
 parseJSONResponse response = 
-  either (throw . addErrMsg (toText (responseBody response))) 
+  either (Left . addErrMsg (toText (responseBody response))) 
          (const $ decodeJSONResponse (responseBody response)) 
          (checkStatusCodeResponse response)
 
 
 decodeJSONResponse
-    :: (MonadThrow m, FromJSON a) 
+    :: FromJSON a 
     => LBS.ByteString 
-    -> m a
+    -> Either PinboardError a
 decodeJSONResponse s = 
   let r = eitherDecodeStrict' (LBS.toStrict s) 
-  in either (throw . createParserErr . toText) return r
+  in either (Left . createParserErr . T.pack) Right r
 
 --------------------------------------------------------------------------------
 

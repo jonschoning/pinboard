@@ -1,4 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
@@ -14,7 +16,9 @@ import           Pinboard
 
 main :: IO ()
 main = hspec $ do
-  prop "UTCTime" $ \(x :: UTCTime) -> (readNoteTime . showNoteTime) x == x
+
+  prop "UTCTime" $ \(x :: UTCTime) -> (readNoteTime . showNoteTime) x == (return x :: Maybe UTCTime)
+
   describe "JSON instances" $ do
     propJSONEq (Proxy :: Proxy UTCTime)
     propJSONEq (Proxy :: Proxy Post)
@@ -25,3 +29,29 @@ main = hspec $ do
     propJSONEq (Proxy :: Proxy JsonTagMap)
     propJSONEq (Proxy :: Proxy Suggested)
     propJSONApproxEq (Proxy :: Proxy PostDates)
+
+  describe "decodeJSONResponse: handle parse failures" $ do
+    it "object parse failure" $
+        let noteJson = "FAIL"
+        in case (decodeJSONResponse noteJson) of
+          Left PinboardError{..} -> errorType == ParseFailure
+          Right Note{..} -> False
+    it "field parse failure" $
+        let noteJson = "{\"length\":0,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+        in case (decodeJSONResponse noteJson) of
+          Left PinboardError{..} -> errorType == ParseFailure
+          Right Note{..} -> False
+    it "value parse failure" $
+        let noteJson = "{\"length\":FAIL,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+        in case (decodeJSONResponse noteJson) of
+          Left PinboardError{..} -> errorType == ParseFailure
+          Right Note{..} -> False
+    it "time parse failure" $
+        let noteJson = "{\"length\":0,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"FAIL-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+        in case (decodeJSONResponse noteJson) of
+          Left PinboardError{..} -> errorType == ParseFailure
+          Right Note{..} -> False
+
+
+pinboardParseFailure :: Selector PinboardError
+pinboardParseFailure e = errorType e == ParseFailure

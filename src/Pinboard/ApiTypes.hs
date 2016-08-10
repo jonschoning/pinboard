@@ -18,13 +18,13 @@ import Data.Aeson.Types    (Parser)
 import Data.HashMap.Strict (HashMap, member, toList)
 import Data.Data           (Data, Typeable)
 import Data.Text           (Text, words, unwords, unpack, pack)
-import Data.Time           (UTCTime)
+import Data.Time           (UTCTime, parseTimeM)
 import Data.Time.Calendar  (Day)
 import GHC.Generics        (Generic)
 
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
-import Data.Time.Format    (parseTimeOrError, formatTime, defaultTimeLocale)
+import Data.Time.Format    (formatTime, defaultTimeLocale)
 import Control.Applicative 
 import Prelude hiding      (words, unwords)
 
@@ -42,7 +42,7 @@ instance FromJSON Posts where
        Posts <$> o .: "date"
              <*> o .: "user"
              <*> o .: "posts"
-   parseJSON _ = error "bad parse"
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON Posts where
   toJSON Posts{..} = object 
@@ -73,7 +73,7 @@ instance FromJSON Post where
             <*> (boolFromYesNo <$> o .: "shared")
             <*> (boolFromYesNo <$> o .: "toread")
             <*> (words <$> o .: "tags")
-   parseJSON _ = error "bad parse"
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON Post where
   toJSON Post{..} = object 
@@ -112,7 +112,7 @@ instance FromJSON PostDates where
           (dateStr, String countStr) <- toList o'
           return (read (unpack dateStr), read (unpack countStr))
        parseDates _ = []
-   parseJSON _ = error "bad parse"
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON PostDates where
   toJSON PostDates{..} = object 
@@ -135,7 +135,7 @@ instance FromJSON NoteList where
    parseJSON (Object o) =
        NoteList <$> o .: "count"
                 <*> o .: "notes"
-   parseJSON _ = error "bad parse"
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON NoteList where
   toJSON NoteList{..} = object 
@@ -157,9 +157,9 @@ instance FromJSON NoteListItem where
                     <*> o .: "hash"
                     <*> o .: "title"
                     <*> (read <$> (o .: "length"))
-                    <*> (readNoteTime <$> o .: "created_at")
-                    <*> (readNoteTime <$> o .: "updated_at")
-   parseJSON _ = error "bad parse"
+                    <*> (readNoteTime =<< o .: "created_at")
+                    <*> (readNoteTime =<< o .: "updated_at")
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON NoteListItem where
   toJSON NoteListItem{..} = object 
@@ -188,9 +188,9 @@ instance FromJSON Note where
             <*> o .: "title"
             <*> o .: "text"
             <*> o .: "length"
-            <*> (readNoteTime <$> o .: "created_at")
-            <*> (readNoteTime <$> o .: "updated_at")
-   parseJSON _ = error "bad parse"
+            <*> (readNoteTime =<< o .: "created_at")
+            <*> (readNoteTime =<< o .: "updated_at")
+   parseJSON _ = fail "bad parse"
 
 instance ToJSON Note where
   toJSON Note{..} = object 
@@ -202,10 +202,8 @@ instance ToJSON Note where
     , "created_at" .= toJSON (showNoteTime noteCreatedAt)
     , "updated_at" .= toJSON (showNoteTime noteUpdatedAt) ]
 
-readNoteTime :: String -> UTCTime
-readNoteTime = parse' defaultTimeLocale "%F %T"
-  where
-    parse' = parseTimeOrError True
+readNoteTime :: Monad m => String -> m UTCTime
+readNoteTime = parseTimeM True defaultTimeLocale "%F %T"
 
 showNoteTime :: UTCTime -> String
 showNoteTime = formatTime defaultTimeLocale "%F %T"
@@ -218,9 +216,9 @@ newtype JsonTagMap = ToJsonTagMap {fromJsonTagMap :: TagMap}
   deriving (Show, Eq, Data, Typeable, Generic)
 
 instance FromJSON JsonTagMap where
-  parseJSON = return . toTags
-    where toTags (Object o) = ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
-          toTags _ = error "bad parse"
+  parseJSON = toTags
+    where toTags (Object o) = return . ToJsonTagMap $ HM.map (\(String s)-> read (unpack s)) o
+          toTags _ = fail "bad parse"
 
 instance ToJSON JsonTagMap where
   toJSON (ToJsonTagMap o) = toJSON $ show <$> o
@@ -234,8 +232,8 @@ instance FromJSON Suggested where
    parseJSON (Object o)
      | member "popular" o = Popular <$> (o .: "popular")
      | member "recommended" o = Recommended  <$> (o .: "recommended")
-     | otherwise = error "bad parse"  
-   parseJSON _ = error "bad parse"
+     | otherwise = fail "bad parse"  
+   parseJSON _ = fail "bad parse"
 
 
 instance ToJSON [Suggested] where
@@ -256,14 +254,14 @@ instance FromJSON DoneResult where
       parseDone :: Text -> Parser DoneResult
       parseDone "done" = return $ ToDoneResult ()
       parseDone msg = ( fail . unpack ) msg
-  parseJSON _ = error "bad parse"
+  parseJSON _ = fail "bad parse"
 
 newtype TextResult = ToTextResult {fromTextResult :: Text}
     deriving (Show, Eq, Data, Typeable, Generic, Ord)
 
 instance FromJSON TextResult where
   parseJSON (Object o) = ToTextResult <$> (o .: "result")
-  parseJSON _ = error "bad parse"
+  parseJSON _ = fail "bad parse"
 
 newtype UpdateTime = ToUpdateTime {fromUpdateTime :: UTCTime}
     deriving (Show, Eq, Data, Typeable, Generic, Ord)
