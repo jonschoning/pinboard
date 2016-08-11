@@ -21,8 +21,6 @@ import           Data.Time.Calendar (Day)
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V
 
-import           Data.Time.Format (readTime, formatTime)
-import           System.Locale (defaultTimeLocale)
 import           Control.Applicative
 import           Prelude hiding (words, unwords)
 
