@@ -1,3 +1,5 @@
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 -- |
@@ -7,20 +9,27 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Pinboard.Error 
-    ( defaultPinboardError,
-      pinboardErrorToEither
+    ( MonadErrorPinboard
+    , defaultPinboardError
+    , pinboardExceptionToEither
+    , pinboardExceptionToMonadError
+    , exceptionToMonadErrorPinboard
+    , tryMonadError
+    , eitherToMonadError
+    , eitherToMonadThrow
     , PinboardErrorHTTPCode (..)
     , PinboardErrorType     (..)
     , PinboardErrorCode     (..)
     , PinboardError         (..)
     ) where
 
-import Data.Text (Text)
+import Data.Text (Text, pack)
 
 import Data.Monoid
 import Prelude
 
 import Control.Exception.Safe
+import Control.Monad.Error.Class (MonadError, throwError)
 ------------------------------------------------------------------------------
 data PinboardErrorHTTPCode = 
           BadRequest        -- ^ 400
@@ -57,8 +66,25 @@ data PinboardError = PinboardError {
 
 instance Exception PinboardError
 
+type MonadErrorPinboard m = MonadError PinboardError m
+
 defaultPinboardError :: PinboardError
 defaultPinboardError = PinboardError UnknownErrorType mempty Nothing Nothing Nothing 
 
-pinboardErrorToEither :: MonadCatch m => m (Either PinboardError a) -> m (Either PinboardError a)
-pinboardErrorToEither = handle (\(e::PinboardError) -> return (Left e))
+pinboardExceptionToEither :: MonadCatch m => m (Either PinboardError a) -> m (Either PinboardError a)
+pinboardExceptionToEither = handle (\(e::PinboardError) -> return (Left e))
+
+tryMonadError :: (Exception e, MonadCatch m, MonadError e r) => m a -> m (r a)
+tryMonadError a = eitherToMonadError <$> try a
+
+pinboardExceptionToMonadError :: (MonadCatch m, MonadErrorPinboard e) => m (e a) -> m (e a)
+pinboardExceptionToMonadError = handle (\(e::PinboardError) -> return (throwError e))
+
+exceptionToMonadErrorPinboard :: (MonadCatch m, MonadErrorPinboard e) => m (e a) -> m (e a)
+exceptionToMonadErrorPinboard = handle (\(e::SomeException) -> return $ throwError $ defaultPinboardError { errorMsg = (pack.show) e })
+
+eitherToMonadError :: MonadError e m => Either e a -> m a
+eitherToMonadError = either throwError return
+
+eitherToMonadThrow :: (Exception e, MonadThrow m) => Either e a -> m a
+eitherToMonadThrow = either throw return

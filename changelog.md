@@ -1,3 +1,7 @@
+__v0.9.9__
+
+generalize (Either PinboardError a) to (MonadErrorPinboard)
+
 __v0.9.8__
 
 use safe-exception

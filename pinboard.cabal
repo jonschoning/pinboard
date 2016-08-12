@@ -78,6 +78,7 @@ test-suite tests
                        semigroups,
                        QuickCheck,
                        mtl >= 2.2.1,
+                       safe-exceptions < 0.2,
                        unordered-containers,
                        transformers >= 0.4.0.0
   ghc-options:         -Wall 

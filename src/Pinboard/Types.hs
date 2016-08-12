@@ -13,6 +13,7 @@ module Pinboard.Types
   , PinboardT
   , runPinboardT
   , MonadPinboard
+  , MonadErrorPinboard
   , PinboardRequest (..)
   , PinboardConfig  (..)
   , ResultFormatType (..)
@@ -32,7 +33,7 @@ import Data.Time.Calendar(Day)
 import Data.Time.Clock(UTCTime)
 import Network.HTTP.Client        (Manager)
 
-import Pinboard.Error  (PinboardError (..))
+import Pinboard.Error
 
 import Control.Applicative
 import Control.Exception.Safe
@@ -45,21 +46,20 @@ type PinboardEnv = (PinboardConfig, Manager)
 type PinboardT m a = ReaderT PinboardEnv (ExceptT PinboardError m) a
 
 runPinboardT 
-  :: PinboardEnv
+  :: MonadCatch m
+  => PinboardEnv
   -> PinboardT m a
   -> m (Either PinboardError a)
-runPinboardT e f = runExceptT (runReaderT f e)
+runPinboardT e f = pinboardExceptionToEither (runExceptT (runReaderT f e))
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
 type MonadPinboard m =
   ( Functor m
   , Applicative m
-  , Monad m
   , MonadIO m
-  , MonadReader PinboardEnv m
-  , MonadThrow m
   , MonadCatch m
+  , MonadReader PinboardEnv m
   )
 
 ------------------------------------------------------------------------------
