@@ -1,0 +1,8 @@
+flags: {}
+packages:
+- '.'
+- '..'
+extra-deps: 
+- http-client-0.5.0
+- http-client-tls-0.3.0
+resolver: lts-6.6
