@@ -91,7 +91,7 @@ runPinboard
     -> PinboardT m a
     -> m (e a)
 runPinboard config f = do
-  mgr <- newMgr
+  mgr <- liftIO newMgr
   eitherToMonadError <$> runPinboardT (config, mgr) f
                    
 
@@ -102,57 +102,55 @@ pinboardJson
     -> m a
 pinboardJson req = do 
   env <- ask
-  res <- sendPinboardRequest env (ensureResultFormatType FormatJson req)
+  res <- liftIO $ sendPinboardRequest env (ensureResultFormatType FormatJson req)
   eitherToMonadThrow (parseJSONResponse res)
 
 --------------------------------------------------------------------------------
 
 runPinboardSingleRaw
-    :: MonadIO m
-    => PinboardConfig       
+    :: PinboardConfig       
     -> PinboardRequest
-    -> m (Response LBS.ByteString)
+    -> IO (Response LBS.ByteString)
 runPinboardSingleRaw config req = liftIO $ newMgr >>= go
   where go mgr = sendPinboardRequest (config, mgr) req
 
 runPinboardSingleRawBS
-    :: (MonadIO m, MonadErrorPinboard e)
+    :: (MonadErrorPinboard e)
     => PinboardConfig       
     -> PinboardRequest
-    -> m (e LBS.ByteString)
+    -> IO (e LBS.ByteString)
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
   return $ responseBody res <$ checkStatusCodeResponse res
 
 runPinboardSingleJson
-      :: (MonadIO m, MonadCatch m, MonadErrorPinboard e, FromJSON a)
+      :: (MonadErrorPinboard e, FromJSON a)
       => PinboardConfig       
       -> PinboardRequest
-      -> m (e a)
+      -> IO (e a)
 runPinboardSingleJson config = runPinboard config . pinboardJson
 
 
 --------------------------------------------------------------------------------
 
 sendPinboardRequest
-      :: MonadIO m
-      => PinboardEnv
+      :: PinboardEnv
       -> PinboardRequest 
-      -> m (Response LBS.ByteString)
+      -> IO (Response LBS.ByteString)
 sendPinboardRequest (PinboardConfig{..}, mgr) PinboardRequest{..} = do
    let url = T.concat [ requestPath 
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq $ T.unpack url
-   liftIO $ httpLbs req mgr
+   httpLbs req mgr
 
 --------------------------------------------------------------------------------
 
-buildReq :: MonadIO m => String -> m Request
+buildReq :: String -> IO Request
 buildReq url = do
-  req <- liftIO $ parseRequest $ "https://api.pinboard.in/v1/" <> url
+  req <- parseRequest $ "https://api.pinboard.in/v1/" <> url
   return $ setRequestIgnoreStatus $ req { 
-    requestHeaders = [("User-Agent","pinboard.hs/0.9.9")]
+    requestHeaders = [("User-Agent","pinboard.hs/0.9.10")]
     }
 
 --------------------------------------------------------------------------------
@@ -210,9 +208,9 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 
 
-newMgr :: MonadIO m => m Manager
-newMgr = liftIO $ withSocketsDo . newManager 
-                $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
+newMgr :: IO Manager
+newMgr = withSocketsDo . newManager 
+           $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
 mgrFail :: (Monad m, MonadErrorPinboard e) => PinboardErrorType -> SomeException -> m (e b)
 mgrFail e msg = return $ throwError $ PinboardError e (toText msg) Nothing Nothing Nothing

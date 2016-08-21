@@ -1,3 +1,7 @@
+__v0.9.10__
+
+avoid pre-lifting IO into MonadIO
+
 __v0.9.9__
 
 generalize (Either PinboardError a) to (MonadErrorPinboard)
