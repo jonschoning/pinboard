@@ -31,26 +31,23 @@ main = hspec $ do
     propJSONApproxEq (Proxy :: Proxy PostDates)
 
     describe "decodeJSONResponse: handle parse failures" $ do
-        it "object parse failure" $
+        it "malformed object parses as ParseFailure" $
             let noteJson = "FAIL"
             in case decodeJSONResponse noteJson of
             Left PinboardError{..} -> errorType == ParseFailure
             Right Note{..} -> False
-        it "field parse failure" $
+        it "malformed field parses as ParseFailure" $
             let noteJson = "{\"length\":0,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
             in case decodeJSONResponse noteJson of
             Left PinboardError{..} -> errorType == ParseFailure
             Right Note{..} -> False
-        it "value parse failure" $
-            let noteJson = "{\"length\":FAIL,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+        it "malformed value parses as ParseFailure" $
+            let noteJson = "{\"length\":FAIL,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
             in case decodeJSONResponse noteJson of
             Left PinboardError{..} -> errorType == ParseFailure
             Right Note{..} -> False
-        it "time parse failure" $
+        it "malformed time parses as ParseFailure" $
             let noteJson = "{\"length\":0,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"FAIL-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
             in case decodeJSONResponse noteJson of
             Left PinboardError{..} -> errorType == ParseFailure
             Right Note{..} -> False
-
-pinboardParseFailure :: Selector PinboardError
-pinboardParseFailure e = errorType e == ParseFailure
