@@ -12,3 +12,5 @@ cabal.sandbox.config
 .stack-work
 src/highlight.js
 src/style.css
+*.tags
+TAGS
