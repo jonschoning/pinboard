@@ -72,6 +72,7 @@ data PinboardRequest = PinboardRequest
 ------------------------------------------------------------------------------
 data PinboardConfig = PinboardConfig
     { apiToken :: !ByteString
+    , requestDelayMills :: !Int
     } deriving Show
 
 ------------------------------------------------------------------------------

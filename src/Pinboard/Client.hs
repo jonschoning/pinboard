@@ -66,6 +66,7 @@ import Network.HTTP.Types.Status  (statusCode)
 import           Network.HTTP.Client
 import           Network.HTTP.Client.TLS
 
+import Control.Concurrent         (threadDelay)
 
 import Pinboard.Types as X
 import Pinboard.Error as X
@@ -81,7 +82,7 @@ import Prelude
 
 -- | Create a default PinboardConfig using the supplied apiToken
 fromApiToken :: String -> PinboardConfig
-fromApiToken token = PinboardConfig { apiToken = pack token }
+fromApiToken token = PinboardConfig { apiToken = pack token, requestDelayMills = 0 }
 
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
@@ -142,6 +143,8 @@ sendPinboardRequest (PinboardConfig{..}, mgr) PinboardRequest{..} = do
                       , "?" 
                       , T.decodeUtf8 $ paramsToByteString $ ("auth_token", urlEncode False apiToken) : encodeParams requestParams ]
    req <- buildReq $ T.unpack url
+   when (requestDelayMills > 0) $
+     threadDelay (requestDelayMills*1000)
    httpLbs req mgr
 
 --------------------------------------------------------------------------------
@@ -150,7 +153,7 @@ buildReq :: String -> IO Request
 buildReq url = do
   req <- parseRequest $ "https://api.pinboard.in/v1/" <> url
   return $ setRequestIgnoreStatus $ req { 
-    requestHeaders = [("User-Agent","pinboard.hs/0.9.10")]
+    requestHeaders = [("User-Agent","pinboard.hs/0.9.11")]
     }
 
 --------------------------------------------------------------------------------

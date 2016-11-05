@@ -1,3 +1,7 @@
+__v0.9.11__
+
+add option to delay between requests (requestDelayMills)
+
 __v0.9.10__
 
 avoid pre-lifting IO into MonadIO
