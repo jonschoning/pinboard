@@ -11,7 +11,7 @@ executable gen
   -- other-modules:       
   other-extensions:    TemplateHaskell
   build-depends:       base >=4.6 && < 5.0 
-                     , aeson >= 0.11.1  && <0.12
+                     , aeson >= 0.11.1  && < 2.0
                      , bytestring >= 0.10.0  && <0.11 
                      , containers >= 0.5.0.0 && <0.6 
                      , either >= 4.4.1 && < 4.5
