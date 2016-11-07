@@ -8,7 +8,13 @@
 -- Stability   : experimental
 -- Portability : POSIX
 module Pinboard.Util
-  ( mkConfig
+  ( defaultPinboardConfig
+  , nullLogger
+  , errorLevelFilter
+  , infoLevelFilter
+  , debugLevelFilter
+  , runNullLoggingT
+  , logNST
   , paramsToByteString
   , toText
   , toTextLower
@@ -21,23 +27,54 @@ module Pinboard.Util
 
 import Data.String (IsString)
 import Data.Text (Text)
+import Control.Monad.IO.Class
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import Pinboard.Types
-       (PinboardRequest(..), PinboardConfig(..), ResultFormatType(..),
-        Param(..), ParamsBS)
 import Network.HTTP.Types (urlEncode)
 
 import Data.Monoid
+
 import Prelude
 
+import Control.Monad.Logger
+
+import Pinboard.Types
+import Data.Time
+
 ------------------------------------------------------------------------------
-mkConfig :: PinboardConfig
-mkConfig =
+defaultPinboardConfig :: PinboardConfig
+defaultPinboardConfig =
   PinboardConfig
   { apiToken = mempty
   , requestDelayMills = 0
+  , execLoggingT = runNullLoggingT
+  , filterLoggingT = infoLevelFilter
   }
+
+runNullLoggingT :: LoggingT m a -> m a
+runNullLoggingT = (`runLoggingT` nullLogger)
+
+nullLogger :: Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+nullLogger _ _ _ _ = return ()
+
+errorLevelFilter :: LogSource -> LogLevel -> Bool
+errorLevelFilter = minLevelFilter LevelError
+
+infoLevelFilter :: LogSource -> LogLevel -> Bool
+infoLevelFilter = minLevelFilter LevelInfo
+
+debugLevelFilter :: LogSource -> LogLevel -> Bool
+debugLevelFilter = minLevelFilter LevelDebug
+
+minLevelFilter :: LogLevel -> LogSource -> LogLevel -> Bool
+minLevelFilter l _ l' = l' >= l
+
+logNST
+  :: (MonadIO m, MonadLogger m)
+  => LogLevel -> Text -> Text -> m ()
+logNST l s t =
+  liftIO (toText <$> getCurrentTime) >>=
+  \time -> logOtherNS ("[pinboard/" <> s <> "]") l ("@(" <> time <> ") " <> t)
 
 ------------------------------------------------------------------------------
 -- | Conversion from a `Show` constrained type to `Text`

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 -- |
 -- Module      : Pinboard.Types
@@ -12,7 +13,9 @@ module Pinboard.Types
   ( PinboardEnv
   , PinboardT
   , runPinboardT
+  , runConfigLoggingT
   , MonadPinboard
+  , ExecLoggingT
   , MonadErrorPinboard
   , PinboardRequest(..)
   , PinboardConfig(..)
@@ -27,6 +30,9 @@ import Control.Monad.Trans.Except (ExceptT, runExceptT)
 import Control.Monad.Trans.Reader (runReaderT)
 import Control.Monad.IO.Class (MonadIO)
 
+import Control.Exception.Safe
+import Control.Monad.Logger
+
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
@@ -36,22 +42,31 @@ import Network.HTTP.Client (Manager)
 import Pinboard.Error
 
 import Control.Applicative
-import Control.Exception.Safe
 import Prelude
 
 ------------------------------------------------------------------------------
 type PinboardEnv = (PinboardConfig, Manager)
 
-type PinboardT m a = ReaderT PinboardEnv (ExceptT PinboardError m) a
+type PinboardT m a = ReaderT PinboardEnv (ExceptT PinboardError (LoggingT m)) a
+
+type ExecLoggingT = forall m. MonadIO m =>
+                              forall a. LoggingT m a -> m a
+
+runConfigLoggingT :: PinboardConfig -> ExecLoggingT
+runConfigLoggingT config =
+  execLoggingT config . filterLogger (filterLoggingT config)
 
 runPinboardT
-  :: MonadCatch m
+  :: (MonadIO m, MonadCatch m)
   => PinboardEnv -> PinboardT m a -> m (Either PinboardError a)
-runPinboardT e f = pinboardExceptionToEither (runExceptT (runReaderT f e))
+runPinboardT env@(config, _) f =
+  runConfigLoggingT
+    config
+    (pinboardExceptionToEither (runExceptT (runReaderT f env)))
 
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
-type MonadPinboard m = (Functor m, Applicative m, MonadIO m, MonadCatch m, MonadReader PinboardEnv m)
+type MonadPinboard m = (Functor m, Applicative m, MonadIO m, MonadCatch m, MonadReader PinboardEnv m, MonadLogger m)
 
 ------------------------------------------------------------------------------
 data PinboardRequest = PinboardRequest
@@ -63,7 +78,13 @@ data PinboardRequest = PinboardRequest
 data PinboardConfig = PinboardConfig
   { apiToken :: !ByteString
   , requestDelayMills :: !Int
-  } deriving (Show)
+  , execLoggingT :: ExecLoggingT
+  , filterLoggingT :: LogSource -> LogLevel -> Bool
+  }
+
+instance Show PinboardConfig where
+  show (PinboardConfig a r _ _) =
+    "{ apiToken = " ++ show a ++ ", requestDelayMills = " ++ show r ++ " }"
 
 ------------------------------------------------------------------------------
 type ParamsBS = [(ByteString, ByteString)]

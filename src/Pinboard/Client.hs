@@ -16,6 +16,9 @@
 ------------------------------------------------------------------------------
 module Pinboard.Client
   ( fromApiToken
+  , withStdoutLogging
+  , withStderrLogging
+  , withNoLogging
    -- | The PinboardConfig provides authentication via apiToken
   , PinboardConfig(..)
    -- * Monadic
@@ -63,6 +66,7 @@ import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 
 import Control.Concurrent (threadDelay)
+import Control.Monad.Logger
 
 import Pinboard.Types as X
 import Pinboard.Error as X
@@ -78,10 +82,41 @@ import Prelude
 -- | Create a default PinboardConfig using the supplied apiToken
 fromApiToken :: String -> PinboardConfig
 fromApiToken token =
-  PinboardConfig
+  defaultPinboardConfig
   { apiToken = pack token
-  , requestDelayMills = 0
   }
+
+withStdoutLogging :: PinboardConfig -> PinboardConfig
+withStdoutLogging p =
+  p
+  { execLoggingT = runStdoutLoggingT
+  }
+
+withStderrLogging :: PinboardConfig -> PinboardConfig
+withStderrLogging p =
+  p
+  { execLoggingT = runStderrLoggingT
+  }
+
+withNoLogging :: PinboardConfig -> PinboardConfig
+withNoLogging p =
+  p
+  { execLoggingT = runNullLoggingT
+  }
+
+logOnException
+  :: (MonadLogger m, MonadCatch m, MonadIO m)
+  => T.Text -> m a -> m a
+logOnException src =
+  handle
+    (\(e :: SomeException) -> do
+       logNST LevelError src (toText e)
+       throw e)
+
+runLogOnException
+  :: (MonadCatch m, MonadIO m)
+  => T.Text -> PinboardConfig -> LoggingT m a -> m a
+runLogOnException logSrc config = runConfigLoggingT config . logOnException logSrc
 
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
@@ -96,19 +131,30 @@ runPinboard config f = do
 pinboardJson
   :: (MonadPinboard m, FromJSON a)
   => PinboardRequest -> m a
-pinboardJson req = do
-  env <- ask
-  res <-
-    liftIO $ sendPinboardRequest env (ensureResultFormatType FormatJson req)
-  eitherToMonadThrow (parseJSONResponse res)
+pinboardJson req =
+  logOnException logSrc $
+  do logNST LevelInfo logSrc (toText req)
+     env <- ask
+     res <-
+       liftIO $ sendPinboardRequest env (ensureResultFormatType FormatJson req)
+     logNST LevelDebug logSrc (toText res)
+     eitherToMonadThrow (parseJSONResponse res)
+  where
+    logSrc = "pinboardJson"
 
 --------------------------------------------------------------------------------
 runPinboardSingleRaw :: PinboardConfig
                      -> PinboardRequest
                      -> IO (Response LBS.ByteString)
-runPinboardSingleRaw config req = liftIO $ newMgr >>= go
+runPinboardSingleRaw config req =
+  runLogOnException logSrc config $
+  do mgr <- liftIO newMgr
+     logNST LevelInfo logSrc (toText req)
+     res <- liftIO $ sendPinboardRequest (config, mgr) req
+     logNST LevelDebug logSrc (toText res)
+     return res
   where
-    go mgr = sendPinboardRequest (config, mgr) req
+    logSrc = "runPinboardSingleRaw"
 
 runPinboardSingleRawBS
   :: (MonadErrorPinboard e)
@@ -130,8 +176,8 @@ sendPinboardRequest (PinboardConfig {..}, mgr) PinboardRequest {..} = do
   let encodedParams = ("auth_token", urlEncode False apiToken) : encodeParams requestParams
       paramsText = T.decodeUtf8 (paramsToByteString encodedParams)
       url = T.unpack $ T.concat [requestPath, "?", paramsText]
-  req <- buildReq url
   when (requestDelayMills > 0) $ threadDelay (requestDelayMills * 1000)
+  req <- buildReq url
   httpLbs req mgr
 
 --------------------------------------------------------------------------------
