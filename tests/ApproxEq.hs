@@ -42,8 +42,7 @@ instance (GApproxEq f) =>
 
 class ApproxEq a  where
   (=~) :: a -> a -> Bool
-  default (=~) :: (Generic a, GApproxEq (Rep a)) =>
-  a -> a -> Bool
+  default (=~) :: (Generic a, GApproxEq (Rep a)) => a -> a -> Bool
   a =~ b = gApproxEq (G.from a) (G.from b)
 
 instance ApproxEq Text where
