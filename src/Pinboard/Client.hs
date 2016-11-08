@@ -161,7 +161,15 @@ runPinboardSingleRawBS
   => PinboardConfig -> PinboardRequest -> IO (e LBS.ByteString)
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
-  return $ responseBody res <$ checkStatusCodeResponse res
+  case checkStatusCodeResponse res of
+    Left e ->
+      runConfigLoggingT
+        config
+        (do logNST LevelError logSrc (toText e)
+            return (throwError e))
+    Right _ -> return (return (responseBody res))
+  where
+    logSrc = "runPinboardSingleRawBS"
 
 runPinboardSingleJson
   :: (MonadErrorPinboard e, FromJSON a)

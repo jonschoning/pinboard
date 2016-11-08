@@ -12,5 +12,5 @@ main = do
           -- { filterLoggingT = debugLevelFilter }
   result <- runPinboard config $ getPostsRecent Nothing Nothing
   case result of
-    Right details -> print ("Left: " ++ show details)
+    Right details -> print ("Right: " ++ show details)
     Left pinboardError -> print ("Left: " ++ show pinboardError)
