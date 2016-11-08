@@ -139,12 +139,13 @@ runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
   case checkStatusCodeResponse res of
     Left e -> logErrorAndThrow e
-    Right _ -> (return.return) (responseBody res)
+    Right _ -> (return . return) (responseBody res)
   where
     logSrc = "runPinboardSingleRawBS"
-    logErrorAndThrow e = runConfigLoggingT config $ do
-      logNST LevelError logSrc (toText e)
-      return (throwError e)
+    logErrorAndThrow e =
+      runConfigLoggingT config $
+      do logNST LevelError logSrc (toText e)
+         return (throwError e)
 
 runPinboardSingleJson
   :: (MonadErrorPinboard e, FromJSON a)

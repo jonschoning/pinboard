@@ -1,5 +1,7 @@
 __v0.9.11__
 
+add logging
+
 add option to delay between requests (requestDelayMills)
 
 __v0.9.10__

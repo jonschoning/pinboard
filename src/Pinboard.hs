@@ -33,9 +33,6 @@ module Pinboard (
       -- * Pinboard.ApiTypesLens
       -- | Lens accessors for Pinboard.ApiTypes
     , module Pinboard.ApiTypesLens
-      -- * Pinboard.Logging
-      -- | Logging Utils
-    , module Pinboard.Logging
   ) where
 
 import Pinboard.Client
@@ -43,4 +40,3 @@ import Pinboard.Api
 import Pinboard.ApiRequest
 import Pinboard.ApiTypes
 import Pinboard.ApiTypesLens
-import Pinboard.Logging
