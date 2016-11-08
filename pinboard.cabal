@@ -55,6 +55,7 @@ library
                        Pinboard.Error
                        Pinboard.Types
                        Pinboard.Util
+                       Pinboard.Logging
   ghc-options:         -Wall
                        -fwarn-incomplete-patterns
                        -funbox-strict-fields

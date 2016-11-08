@@ -16,9 +16,7 @@
 ------------------------------------------------------------------------------
 module Pinboard.Client
   ( fromApiToken
-  , withStdoutLogging
-  , withStderrLogging
-  , withNoLogging
+  , defaultPinboardConfig
    -- | The PinboardConfig provides authentication via apiToken
   , PinboardConfig(..)
    -- * Monadic
@@ -71,6 +69,7 @@ import Control.Monad.Logger
 import Pinboard.Types as X
 import Pinboard.Error as X
 import Pinboard.Util as X
+import Pinboard.Logging as X
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -86,37 +85,14 @@ fromApiToken token =
   { apiToken = pack token
   }
 
-withStdoutLogging :: PinboardConfig -> PinboardConfig
-withStdoutLogging p =
-  p
-  { execLoggingT = runStdoutLoggingT
+defaultPinboardConfig :: PinboardConfig
+defaultPinboardConfig =
+  PinboardConfig
+  { apiToken = mempty
+  , requestDelayMills = 0
+  , execLoggingT = runNullLoggingT
+  , filterLoggingT = infoLevelFilter
   }
-
-withStderrLogging :: PinboardConfig -> PinboardConfig
-withStderrLogging p =
-  p
-  { execLoggingT = runStderrLoggingT
-  }
-
-withNoLogging :: PinboardConfig -> PinboardConfig
-withNoLogging p =
-  p
-  { execLoggingT = runNullLoggingT
-  }
-
-logOnException
-  :: (MonadLogger m, MonadCatch m, MonadIO m)
-  => T.Text -> m a -> m a
-logOnException src =
-  handle
-    (\(e :: SomeException) -> do
-       logNST LevelError src (toText e)
-       throw e)
-
-runLogOnException
-  :: (MonadCatch m, MonadIO m)
-  => T.Text -> PinboardConfig -> LoggingT m a -> m a
-runLogOnException logSrc config = runConfigLoggingT config . logOnException logSrc
 
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
