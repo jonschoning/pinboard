@@ -13,7 +13,9 @@
 -- sent via Pinboard.Client, in the case you need more control
 -- for how the response should be processed over what Pinboard.Api provides.
 module Pinboard.ApiRequest
-  ( getPostsRecentRequest
+  ( 
+    -- ** Posts
+    getPostsRecentRequest
   , getPostsForDateRequest
   , getPostsAllRequest
   , getPostsDatesRequest
@@ -34,7 +36,7 @@ module Pinboard.ApiRequest
   , getNoteRequest
   ) where
 
--- ** Posts
+
 import Pinboard.Types
        (PinboardRequest(..), Param(..), ResultFormatType(..))
 

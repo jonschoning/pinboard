@@ -15,7 +15,8 @@
 -- Portability : POSIX
 ------------------------------------------------------------------------------
 module Pinboard.Client
-  ( fromApiToken
+  ( -- * Config
+    fromApiToken
   , defaultPinboardConfig
    -- | The PinboardConfig provides authentication via apiToken
   , PinboardConfig(..)
@@ -45,7 +46,6 @@ module Pinboard.Client
   , module X
   ) where
 
--- * Config
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 

@@ -15,7 +15,8 @@
 --
 -- Provides Pinboard Api Access (deserializes into Haskell data structures)
 module Pinboard.Api
-  ( getPostsRecent
+  ( -- ** Posts
+    getPostsRecent
   , getPostsForDate
   , getPostsAll
   , getPostsDates
@@ -36,7 +37,7 @@ module Pinboard.Api
   , getNote
   ) where
 
--- ** Posts
+
 import Pinboard.Client (pinboardJson)
 import Data.Text (Text)
 import Data.Time (UTCTime)
