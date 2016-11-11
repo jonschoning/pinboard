@@ -22,6 +22,7 @@ module Pinboard.Client
   , PinboardConfig(..)
    -- * Monadic
   , runPinboard
+  , runPinboardE
   , pinboardJson
    -- * Single
   , runPinboardSingleRaw
@@ -99,8 +100,13 @@ defaultPinboardConfig =
 runPinboard
   :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
   => PinboardConfig -> PinboardT m a -> m (e a)
-runPinboard config f = do
-  mgr <- liftIO newMgr
+runPinboard config f = 
+  liftIO newMgr >>= \mgr -> runPinboardE (config, mgr) f
+
+runPinboardE
+  :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
+  => PinboardEnv -> PinboardT m a -> m (e a)
+runPinboardE (config, mgr) f = 
   eitherToMonadError <$> runPinboardT (config, mgr) f
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
