@@ -1,5 +1,5 @@
 name:                pinboard
-version:             0.9.11
+version:             0.9.12
 synopsis:            Access to the Pinboard API
 license:             MIT
 license-file:        LICENSE
@@ -40,7 +40,7 @@ library
                      , random >= 1.1
                      , safe-exceptions < 0.2
                      , unordered-containers
-                     , monad-logger
+                     , monad-logger >= 0.3 && < 0.4
 
               
   default-language:    Haskell2010
