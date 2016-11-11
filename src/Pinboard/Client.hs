@@ -50,7 +50,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader
 
 import Control.Exception.Safe
-import Control.Monad.Error.Class (throwError)
+import Control.Monad.Error.Class
 
 import Data.ByteString.Char8 (pack)
 import Data.Monoid ((<>))
@@ -138,14 +138,13 @@ runPinboardSingleRawBS
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
   case checkStatusCodeResponse res of
-    Left e ->
-      runConfigLoggingT
-        config
-        (do logNST LevelError logSrc (toText e)
-            return (throwError e))
-    Right _ -> return (return (responseBody res))
+    Left e -> logErrorAndThrow e
+    Right _ -> (return.return) (responseBody res)
   where
     logSrc = "runPinboardSingleRawBS"
+    logErrorAndThrow e = runConfigLoggingT config $ do
+      logNST LevelError logSrc (toText e)
+      return (throwError e)
 
 runPinboardSingleJson
   :: (MonadErrorPinboard e, FromJSON a)
