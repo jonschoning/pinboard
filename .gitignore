@@ -13,5 +13,7 @@ cabal.sandbox.config
 src/highlight.js
 src/style.css
 *.tags
+*.prof
+*.svg
 TAGS
 pinboard.cabal
