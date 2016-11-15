@@ -14,3 +14,4 @@ src/highlight.js
 src/style.css
 *.tags
 TAGS
+pinboard.cabal
