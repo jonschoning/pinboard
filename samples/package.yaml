@@ -1,0 +1,23 @@
+name: sample
+version: '0.1.0.0'
+author: Jon Schoning
+maintainer: jonschoning@gmail.com
+license: UnspecifiedLicense
+other-extensions:
+- TemplateHaskell
+dependencies:
+- base >=4.6 && <5.0
+- lens >=4.13
+- transformers >=0.4.0.0
+- pinboard
+- base >=4.6 && <5.0
+- transformers >=0.4.0.0
+executables:
+  sampleLens:
+    main: sampleLens.hs
+    source-dirs: ./.
+    ghc-options: -Wall
+  sample:
+    main: sample.hs
+    source-dirs: ./.
+    ghc-options: -Wall
