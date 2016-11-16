@@ -15,5 +15,5 @@ src/style.css
 *.tags
 *.prof
 *.svg
+*.cabal
 TAGS
-pinboard.cabal

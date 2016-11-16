@@ -2,7 +2,7 @@ name: gen
 version: '0.1.0.0'
 author: Jon Schoning
 maintainer: jonschoning@gmail.com
-license: UnspecifiedLicense
+license: MIT
 source-dirs:
 - ./.
 - ../src
@@ -33,6 +33,7 @@ dependencies:
 - profunctors >=5
 - lens >=4.13
 - template-haskell >=2.10
+- monad-logger
 executables:
   gen:
     main: Main.hs

@@ -2,7 +2,7 @@ name: sample
 version: '0.1.0.0'
 author: Jon Schoning
 maintainer: jonschoning@gmail.com
-license: UnspecifiedLicense
+license: MIT
 other-extensions:
 - TemplateHaskell
 dependencies:
