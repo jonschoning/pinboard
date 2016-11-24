@@ -79,7 +79,7 @@ import qualified Data.Text.Encoding as T
 import Control.Applicative
 import Prelude
 
--- | Create a default PinboardConfig using the supplied apiToken
+-- | Create a default PinboardConfig using the supplied apiToken (ex: "use:ABCDEF0123456789ABCD")
 fromApiToken :: String -> PinboardConfig
 fromApiToken token =
   defaultPinboardConfig
