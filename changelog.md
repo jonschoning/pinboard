@@ -1,3 +1,7 @@
+__v0.9.12__
+
+add runPinboardE
+
 __v0.9.11__
 
 add logging

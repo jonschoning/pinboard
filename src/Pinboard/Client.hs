@@ -103,6 +103,7 @@ runPinboard
 runPinboard config f = 
   liftIO newMgr >>= \mgr -> runPinboardE (config, mgr) f
 
+-- | Execute computations in the Pinboard monad (with specified http Manager)
 runPinboardE
   :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
   => PinboardEnv -> PinboardT m a -> m (e a)
