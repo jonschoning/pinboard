@@ -68,7 +68,7 @@ type ExecLoggingT = forall m. MonadIO m =>
 
 data PinboardConfig = PinboardConfig
   { apiToken :: !ByteString
-  , requestDelayMills :: !Int
+  , maxRequestRateMills :: !Int
   , lastRequestTime :: IORef UTCTime
   , doThreadDelay :: PinboardConfig -> IO ()
   , execLoggingT :: ExecLoggingT

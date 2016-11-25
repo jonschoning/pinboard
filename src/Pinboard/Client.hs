@@ -15,7 +15,7 @@
 -- Portability : POSIX
 ------------------------------------------------------------------------------
 module Pinboard.Client
-  ( 
+  (
     -- * Config
     fromApiToken
   , defaultPinboardConfig
@@ -31,6 +31,7 @@ module Pinboard.Client
   , runPinboardSingleJson
    -- * Sending
   , sendPinboardRequest
+   -- * Delaying
   , requestThreadDelay
    -- *  Manager (http-client)
   , newMgr
@@ -97,7 +98,7 @@ defaultPinboardConfig :: PinboardConfig
 defaultPinboardConfig =
   PinboardConfig
   { apiToken = mempty
-  , requestDelayMills = 3000
+  , maxRequestRateMills = 0
   , execLoggingT = runNullLoggingT
   , filterLoggingT = infoLevelFilter
   , lastRequestTime =
@@ -180,18 +181,31 @@ sendPinboardRequest (cfg@PinboardConfig {..}, mgr) PinboardRequest {..} = do
   doThreadDelay cfg
   httpLbs req mgr
 
--- | perform thread delay when requestDelayMills exceeds lastRequestTime - currentTime
+--------------------------------------------------------------------------------
+
+-- | delays the thread if the time since the previous request exceeds the configured maxRequestRateMills 
 requestThreadDelay :: PinboardConfig -> IO ()
-requestThreadDelay PinboardConfig {..} = do
+requestThreadDelay cfg@PinboardConfig {..} = do
   currentTime <- getCurrentTime
   lastTime <- readIORef lastRequestTime
-  when
-    (requestDelayMills > 0 && diffUTCTime lastTime currentTime > requestDelaySecs) $
-    threadDelay (requestDelayMills * 1000)
+  let elapsedtime = diffUTCTime currentTime lastTime
+      delaytime = max 0 (requestDelaySecs - elapsedtime)
+  when (delaytime > 0) $
+    do runConfigLoggingT cfg $
+         let logTxt =
+               "DELAY " <> ", lastTime: " <> toText lastTime <>
+               ", requestDelaySecs: " <>
+               toText requestDelaySecs <>
+               ", elapsedTime: " <>
+               toText elapsedtime <>
+               ", delayTime: " <>
+               toText delaytime
+         in logNST LevelInfo "requestThreadDelay" logTxt
+       threadDelay (maxRequestRateMills * 1000)
   currentTime' <- getCurrentTime
   writeIORef lastRequestTime currentTime'
   where
-    requestDelaySecs = fromInteger (toInteger requestDelayMills) * 1000000
+    requestDelaySecs = fromInteger (toInteger maxRequestRateMills) / 1000
 
 --------------------------------------------------------------------------------
 buildReq :: String -> IO Request

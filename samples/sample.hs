@@ -3,13 +3,14 @@
 import Pinboard
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Reader
+import Control.Monad
 
 main :: IO ()
 main = do
   let config =
-        -- withStdoutLogging
+        withStdoutLogging
           (fromApiToken "api token")
-          -- { filterLoggingT = debugLevelFilter }
+          { filterLoggingT = infoLevelFilter }
   result <- runPinboard config $ getPostsRecent Nothing Nothing
   case result of
     Right details -> print ("Right: " ++ show details)

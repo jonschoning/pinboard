@@ -2,6 +2,8 @@ __v0.9.12__
 
 add runPinboardE
 
+add ability to delay the thread if the time since the previous request exceeds the configured maxRequestRateMills (rename requestDelayMills to maxRequestRateMills)
+
 __v0.9.11__
 
 add logging
