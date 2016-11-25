@@ -189,23 +189,23 @@ requestThreadDelay cfg@PinboardConfig {..} = do
   currentTime <- getCurrentTime
   lastTime <- readIORef lastRequestTime
   let elapsedtime = diffUTCTime currentTime lastTime
-      delaytime = max 0 (requestDelaySecs - elapsedtime)
+      delaytime = max 0 (maxRequestRateSecs - elapsedtime)
   when (delaytime > 0) $
     do runConfigLoggingT cfg $
          let logTxt =
                "DELAY " <> ", lastTime: " <> toText lastTime <>
-               ", requestDelaySecs: " <>
-               toText requestDelaySecs <>
+               ", maxRequestRateSecs: " <>
+               toText maxRequestRateSecs <>
                ", elapsedTime: " <>
                toText elapsedtime <>
                ", delayTime: " <>
                toText delaytime
          in logNST LevelInfo "requestThreadDelay" logTxt
-       threadDelay (maxRequestRateMills * 1000)
+       threadDelay (floor (delaytime * 1000000))
   currentTime' <- getCurrentTime
   writeIORef lastRequestTime currentTime'
   where
-    requestDelaySecs = fromInteger (toInteger maxRequestRateMills) / 1000
+    maxRequestRateSecs = fromInteger (toInteger maxRequestRateMills) / 1000
 
 --------------------------------------------------------------------------------
 buildReq :: String -> IO Request
@@ -214,7 +214,7 @@ buildReq url = do
   return $
     setRequestIgnoreStatus $
     req
-    { requestHeaders = [("User-Agent", "pinboard.hs/0.9.12")]
+    { requestHeaders = [("User-Agent", "pinboard.hs/0.9.12.1")]
     }
 
 --------------------------------------------------------------------------------

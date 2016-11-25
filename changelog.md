@@ -1,3 +1,7 @@
+__v0.9.12.1
+
+bug fixes 
+
 __v0.9.12__
 
 add runPinboardE
