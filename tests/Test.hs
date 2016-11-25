@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 
 module Main where
 
@@ -31,26 +32,18 @@ main =
           propJSONEq (Proxy :: Proxy Suggested)
           propJSONApproxEq (Proxy :: Proxy PostDates)
           describe "decodeJSONResponse: handle parse failures" $
-            do it "malformed object parses as ParseFailure" $
-                 let noteJson = "FAIL"
-                 in case decodeJSONResponse noteJson of
-                      Left PinboardError {..} -> errorType == ParseFailure
-                      Right Note {..} -> False
-               it "malformed field parses as ParseFailure" $
-                 let noteJson =
-                       "{\"length\":0,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
-                 in case decodeJSONResponse noteJson of
-                      Left PinboardError {..} -> errorType == ParseFailure
-                      Right Note {..} -> False
-               it "malformed value parses as ParseFailure" $
-                 let noteJson =
-                       "{\"length\":FAIL,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
-                 in case decodeJSONResponse noteJson of
-                      Left PinboardError {..} -> errorType == ParseFailure
-                      Right Note {..} -> False
-               it "malformed time parses as ParseFailure" $
-                 let noteJson =
-                       "{\"length\":0,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"FAIL-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
-                 in case decodeJSONResponse noteJson of
-                      Left PinboardError {..} -> errorType == ParseFailure
-                      Right Note {..} -> False
+            let expectNoteParseFailure json =
+                  case (decodeJSONResponse json :: Either PinboardError Note) of
+                    Left e -> errorType e == ParseFailure
+                    _ -> False
+            in do it "malformed object parses as ParseFailure" $
+                    expectNoteParseFailure "FAIL"
+                  it "malformed field parses as ParseFailure" $
+                    expectNoteParseFailure
+                      "{\"length\":0,\"hash\":\"\",\"text_FAIL\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+                  it "malformed value parses as ParseFailure" $
+                    expectNoteParseFailure
+                      "{\"length\":FAIL,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"1864-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
+                  it "malformed time parses as ParseFailure" $
+                    expectNoteParseFailure
+                      "{\"length\":0,\"hash\":\"\",\"text\":\"\",\"updated_at\":\"FAIL-05-09 13:50:53\",\"created_at\":\"1864-05-09 18:21:35\",\"id\":\"\",\"title\":\"\"}"
