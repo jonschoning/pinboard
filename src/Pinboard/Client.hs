@@ -15,7 +15,8 @@
 -- Portability : POSIX
 ------------------------------------------------------------------------------
 module Pinboard.Client
-  ( -- * Config
+  ( 
+    -- * Config
     fromApiToken
   , defaultPinboardConfig
    -- | The PinboardConfig provides authentication via apiToken
@@ -30,6 +31,7 @@ module Pinboard.Client
   , runPinboardSingleJson
    -- * Sending
   , sendPinboardRequest
+  , requestThreadDelay
    -- *  Manager (http-client)
   , newMgr
   , mgrFail
@@ -76,6 +78,11 @@ import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 
+import GHC.IO (unsafePerformIO)
+import Data.IORef
+import Data.Time.Clock
+import Data.Time.Calendar
+
 import Control.Applicative
 import Prelude
 
@@ -90,9 +97,12 @@ defaultPinboardConfig :: PinboardConfig
 defaultPinboardConfig =
   PinboardConfig
   { apiToken = mempty
-  , requestDelayMills = 0
+  , requestDelayMills = 3000
   , execLoggingT = runNullLoggingT
   , filterLoggingT = infoLevelFilter
+  , lastRequestTime =
+    unsafePerformIO $ newIORef (UTCTime (ModifiedJulianDay 0) 0)
+  , doThreadDelay = Pinboard.Client.requestThreadDelay
   }
 
 --------------------------------------------------------------------------------
@@ -100,14 +110,13 @@ defaultPinboardConfig =
 runPinboard
   :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
   => PinboardConfig -> PinboardT m a -> m (e a)
-runPinboard config f = 
-  liftIO newMgr >>= \mgr -> runPinboardE (config, mgr) f
+runPinboard config f = liftIO newMgr >>= \mgr -> runPinboardE (config, mgr) f
 
 -- | Execute computations in the Pinboard monad (with specified http Manager)
 runPinboardE
   :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
   => PinboardEnv -> PinboardT m a -> m (e a)
-runPinboardE (config, mgr) f = 
+runPinboardE (config, mgr) f =
   eitherToMonadError <$> runPinboardT (config, mgr) f
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
@@ -163,13 +172,26 @@ runPinboardSingleJson config = runPinboard config . pinboardJson
 sendPinboardRequest :: PinboardEnv
                     -> PinboardRequest
                     -> IO (Response LBS.ByteString)
-sendPinboardRequest (PinboardConfig {..}, mgr) PinboardRequest {..} = do
+sendPinboardRequest (cfg@PinboardConfig {..}, mgr) PinboardRequest {..} = do
   let encodedParams = ("auth_token", urlEncode False apiToken) : encodeParams requestParams
       paramsText = T.decodeUtf8 (paramsToByteString encodedParams)
       url = T.unpack $ T.concat [requestPath, "?", paramsText]
-  when (requestDelayMills > 0) $ threadDelay (requestDelayMills * 1000)
   req <- buildReq url
+  doThreadDelay cfg
   httpLbs req mgr
+
+-- | perform thread delay when requestDelayMills exceeds lastRequestTime - currentTime
+requestThreadDelay :: PinboardConfig -> IO ()
+requestThreadDelay PinboardConfig {..} = do
+  currentTime <- getCurrentTime
+  lastTime <- readIORef lastRequestTime
+  when
+    (requestDelayMills > 0 && diffUTCTime lastTime currentTime > requestDelaySecs) $
+    threadDelay (requestDelayMills * 1000)
+  currentTime' <- getCurrentTime
+  writeIORef lastRequestTime currentTime'
+  where
+    requestDelaySecs = fromInteger (toInteger requestDelayMills) * 1000000
 
 --------------------------------------------------------------------------------
 buildReq :: String -> IO Request

@@ -35,6 +35,7 @@ import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
 import Data.Time.Clock (UTCTime)
+import Data.IORef
 import Network.HTTP.Client (Manager)
 
 import Pinboard.Error
@@ -68,12 +69,14 @@ type ExecLoggingT = forall m. MonadIO m =>
 data PinboardConfig = PinboardConfig
   { apiToken :: !ByteString
   , requestDelayMills :: !Int
+  , lastRequestTime :: IORef UTCTime
+  , doThreadDelay :: PinboardConfig -> IO ()
   , execLoggingT :: ExecLoggingT
   , filterLoggingT :: LogSource -> LogLevel -> Bool
   }
 
 instance Show PinboardConfig where
-  show (PinboardConfig a r _ _) =
+  show (PinboardConfig a r _ _ _ _) =
     "{ apiToken = " ++ show a ++ ", requestDelayMills = " ++ show r ++ " }"
 
 runConfigLoggingT :: PinboardConfig -> ExecLoggingT
