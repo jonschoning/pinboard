@@ -183,7 +183,7 @@ sendPinboardRequest (cfg@PinboardConfig {..}, mgr) PinboardRequest {..} = do
 
 --------------------------------------------------------------------------------
 
--- | delays the thread if the time since the previous request exceeds the configured maxRequestRateMills 
+-- | delays the thread, if the time since the previous request is less than the configured maxRequestRateMills 
 requestThreadDelay :: PinboardConfig -> IO ()
 requestThreadDelay cfg@PinboardConfig {..} = do
   currentTime <- getCurrentTime
