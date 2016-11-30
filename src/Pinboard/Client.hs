@@ -105,6 +105,7 @@ defaultPinboardConfig =
     unsafePerformIO $ newIORef (UTCTime (ModifiedJulianDay 0) 0)
   , doThreadDelay = Pinboard.Client.requestThreadDelay
   }
+{-# NOINLINE defaultPinboardConfig #-}
 
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
