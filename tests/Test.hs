@@ -20,7 +20,7 @@ main =
   hspec $
   do prop "UTCTime" $
        \(x :: UTCTime) ->
-          (readNoteTime . showNoteTime) x == (return x :: Maybe UTCTime)
+          (readNoteTime . showNoteTime) x == Just x
      describe "JSON instances" $
        do propJSONEq (Proxy :: Proxy UTCTime)
           propJSONEq (Proxy :: Proxy Post)
