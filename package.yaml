@@ -24,6 +24,10 @@ extra-source-files:
 - README.md
 - changelog.md
 ghc-options: -Wall
+when:
+  - condition: impl(ghc >= 8.0.1)
+    default-extensions: 
+      - MonadFailDesugaring
 dependencies:
 - base >=4.6 && <5.0
 - transformers >=0.4.0.0
@@ -66,7 +70,6 @@ tests:
     main: Test.hs
     source-dirs: tests
     ghc-options:
-    - -fno-warn-orphans
     - -fno-warn-orphans
     dependencies:
     - pinboard
