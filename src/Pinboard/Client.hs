@@ -75,6 +75,9 @@ import Pinboard.Error as X
 import Pinboard.Util as X
 import Pinboard.Logging as X
 
+import Paths_pinboard (version)
+import Data.Version (showVersion)
+
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -215,7 +218,7 @@ buildReq url = do
   return $
     setRequestIgnoreStatus $
     req
-    { requestHeaders = [("User-Agent", "pinboard.hs/0.9.12.2")]
+    { requestHeaders = [("User-Agent", "pinboard.hs/" <> pack (showVersion version))]
     }
 
 --------------------------------------------------------------------------------
