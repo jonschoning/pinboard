@@ -215,7 +215,7 @@ buildReq url = do
   return $
     setRequestIgnoreStatus $
     req
-    { requestHeaders = [("User-Agent", "pinboard.hs/0.9.12.1")]
+    { requestHeaders = [("User-Agent", "pinboard.hs/0.9.12.2")]
     }
 
 --------------------------------------------------------------------------------

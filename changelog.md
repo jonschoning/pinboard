@@ -1,3 +1,7 @@
+__v0.9.12.2
+
+vector bounds
+
 __v0.9.12.1
 
 bug fixes 
