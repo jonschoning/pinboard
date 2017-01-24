@@ -24,7 +24,7 @@ import Data.Time.Calendar (Day)
 import GHC.Generics (Generic)
 
 import qualified Data.HashMap.Strict as HM
-#if !MIN_VERSION_aeson(1,1,0)
+#if !MIN_VERSION_aeson(1,0,0)
 import qualified Data.Vector as V
 #endif
 import Data.Time.Format (formatTime, defaultTimeLocale)
@@ -234,7 +234,7 @@ instance FromJSON Suggested where
     | otherwise = fail "bad parse"
   parseJSON _ = fail "bad parse"
 
-#if !MIN_VERSION_aeson(1,1,0)
+#if !MIN_VERSION_aeson(1,0,0)
 instance ToJSON [Suggested] where
   toJSON xs = Array $ toJSON <$> V.fromList xs
 #endif

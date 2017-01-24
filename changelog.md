@@ -1,3 +1,7 @@
+__v0.9.12.4
+
+fix for aeson [] instances in 1.0.0.0
+
 __v0.9.12.2
 
 vector bounds
