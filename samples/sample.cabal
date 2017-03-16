@@ -1,0 +1,42 @@
+-- This file has been generated from package.yaml by hpack version 0.15.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           sample
+version:        0.1.0.0
+author:         Jon Schoning
+maintainer:     jonschoning@gmail.com
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+executable sample
+  main-is: sample.hs
+  hs-source-dirs:
+      ./.
+  other-extensions: TemplateHaskell
+  ghc-options: -Wall
+  build-depends:
+      base >=4.6 && <5.0
+    , lens >=4.13
+    , transformers >=0.4.0.0
+    , pinboard
+    , base >=4.6 && <5.0
+    , transformers >=0.4.0.0
+  default-language: Haskell2010
+
+executable sampleLens
+  main-is: sampleLens.hs
+  hs-source-dirs:
+      ./.
+  other-extensions: TemplateHaskell
+  ghc-options: -Wall
+  build-depends:
+      base >=4.6 && <5.0
+    , lens >=4.13
+    , transformers >=0.4.0.0
+    , pinboard
+    , base >=4.6 && <5.0
+    , transformers >=0.4.0.0
+  default-language: Haskell2010
