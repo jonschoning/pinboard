@@ -12,4 +12,3 @@ packages: []
 packages: ['.']
 extra-deps: []
 resolver: nightly-2017-07-17
-
