@@ -11,5 +11,4 @@ extra-package-dbs: []
 packages: []
 packages: ['.']
 extra-deps: []
-resolver: nightly-2017-07-31
-system-ghc: true
+resolver: lts-9.10

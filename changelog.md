@@ -1,3 +1,7 @@
+__v0.9.12.6
+
+update http-types bounds
+
 __v0.9.12.5
 
 update time bounds
