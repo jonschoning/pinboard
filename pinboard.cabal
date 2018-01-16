@@ -1,9 +1,11 @@
--- This file has been generated from package.yaml by hpack version 0.18.1.
+-- This file has been generated from package.yaml by hpack version 0.20.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: b0a97425765cddbda4f22d2f4fbb77979e686b8021e7a55dc0f22407d00bcf5d
 
 name:           pinboard
-version:        0.9.12.6
+version:        0.9.12.7
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -34,24 +36,24 @@ library
       src
   ghc-options: -Wall -fwarn-incomplete-patterns -funbox-strict-fields -fexpose-all-unfoldings
   build-depends:
-      base >=4.6 && <5.0
-    , transformers >=0.4.0.0
-    , mtl >=2.2.1
-    , safe-exceptions <0.2
-    , unordered-containers
-    , aeson >=0.11.1 && <2.0
+      aeson >=0.11.1 && <2.0
+    , base >=4.6 && <5.0
     , bytestring >=0.10.0 && <0.11
     , containers >=0.5.0.0 && <0.6
-    , http-types >=0.8 && <0.10
     , http-client >=0.5 && <0.6
     , http-client-tls >=0.3.0 && <0.4
-    , text >=0.11 && <1.3
-    , time >=1.5 && <1.9
-    , vector >=0.10.9 && <0.13
+    , http-types >=0.8 && <0.11
+    , monad-logger >=0.3 && <0.4
+    , mtl >=2.2.1
     , network >=2.6.2 && <2.7
     , profunctors >=5
     , random >=1.1
-    , monad-logger >=0.3 && <0.4
+    , safe-exceptions <0.2
+    , text >=0.11 && <1.3
+    , time >=1.5 && <1.9
+    , transformers >=0.4.0.0
+    , unordered-containers
+    , vector >=0.10.9 && <0.13
   exposed-modules:
       Pinboard
       Pinboard.Api
@@ -74,22 +76,23 @@ test-suite tests
       tests
   ghc-options: -Wall -fno-warn-orphans
   build-depends:
-      base >=4.6 && <5.0
-    , transformers >=0.4.0.0
-    , mtl >=2.2.1
-    , safe-exceptions <0.2
-    , unordered-containers
-    , pinboard
+      QuickCheck
+    , aeson
+    , base >=4.6 && <5.0
     , bytestring
     , containers
     , hspec >=1.8
+    , mtl >=2.2.1
+    , pinboard
+    , safe-exceptions <0.2
+    , semigroups
     , text
     , time
-    , aeson
-    , semigroups
-    , QuickCheck
+    , transformers >=0.4.0.0
+    , unordered-containers
   other-modules:
       ApproxEq
       Instances
       PropJSON
+      Paths_pinboard
   default-language: Haskell2010
