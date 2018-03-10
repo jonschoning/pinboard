@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 80963700123c27f1e48db23ed1e432b39e1bf1b48311b465a6cf963beeafebe0
+-- hash: 3047eb3cb87384bb0a1d1595c6bf34d70e6e4a2516fb73eb6cd78eab2312f00c
 
 name:           pinboard
-version:        0.9.12.8
+version:        0.9.12.9
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -42,7 +42,7 @@ library
     , containers >=0.5.0.0 && <0.6
     , http-client >=0.5 && <0.6
     , http-client-tls >=0.3.0 && <0.4
-    , http-types >=0.8 && <0.12
+    , http-types >=0.8 && <0.13
     , monad-logger >=0.3 && <0.4
     , mtl >=2.2.1
     , network >=2.6.2 && <2.7
