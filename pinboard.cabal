@@ -1,11 +1,11 @@
--- This file has been generated from package.yaml by hpack version 0.20.0.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3047eb3cb87384bb0a1d1595c6bf34d70e6e4a2516fb73eb6cd78eab2312f00c
+-- hash: 6856969fd7ca8c07425c32b728f5b20ac904d243a597f07d964d8c6bcc6e90fd
 
 name:           pinboard
-version:        0.9.12.9
+version:        0.9.12.10
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -22,7 +22,6 @@ license:        MIT
 license-file:   LICENSE
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     changelog.md
     README.md
@@ -45,7 +44,7 @@ library
     , http-types >=0.8 && <0.13
     , monad-logger >=0.3 && <0.4
     , mtl >=2.2.1
-    , network >=2.6.2 && <2.7
+    , network >=2.6.2 && <2.8
     , profunctors >=5
     , random >=1.1
     , safe-exceptions <0.2

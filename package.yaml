@@ -1,5 +1,5 @@
 name: pinboard
-version: '0.9.12.9'
+version: '0.9.12.10'
 synopsis: Access to the Pinboard API
 description: ! '
 
@@ -57,7 +57,7 @@ library:
   - text >=0.11 && <1.3
   - time >=1.5 && <1.9
   - vector >=0.10.9 && <0.13
-  - network >=2.6.2 && <2.7
+  - network >=2.6.2 && <2.8
   - profunctors >=5
   - random >=1.1
   - monad-logger >=0.3 && <0.4
