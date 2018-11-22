@@ -53,8 +53,8 @@ module Pinboard.Client
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 
-import Control.Exception.Safe
-import Control.Monad.Error.Class
+import Control.Monad.IO.Unlift
+import UnliftIO.Exception
 
 import Data.ByteString.Char8 (pack)
 import Data.Monoid ((<>))
@@ -113,21 +113,21 @@ defaultPinboardConfig =
 --------------------------------------------------------------------------------
 -- | Execute computations in the Pinboard monad
 runPinboard
-  :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
-  => PinboardConfig -> PinboardT m a -> m (e a)
+  :: MonadUnliftIO m
+  => PinboardConfig -> PinboardT m a -> m a
 runPinboard config f = liftIO newMgr >>= \mgr -> runPinboardE (config, mgr) f
 
 -- | Execute computations in the Pinboard monad (with specified http Manager)
 runPinboardE
-  :: (MonadIO m, MonadCatch m, MonadErrorPinboard e)
-  => PinboardEnv -> PinboardT m a -> m (e a)
+  :: MonadUnliftIO m
+  => PinboardEnv -> PinboardT m a -> m a
 runPinboardE (config, mgr) f =
-  eitherToMonadError <$> runPinboardT (config, mgr) f
+  runPinboardT (config, mgr) f
 
 -- | Create a Pinboard value from a PinboardRequest w/ json deserialization
 pinboardJson
   :: (MonadPinboard m, FromJSON a)
-  => PinboardRequest -> m a
+  => PinboardRequest -> m (Either PinboardError a)
 pinboardJson req =
   logOnException logSrc $
   do logNST LevelInfo logSrc (toText req)
@@ -135,7 +135,7 @@ pinboardJson req =
      res <-
        liftIO $ sendPinboardRequest env (ensureResultFormatType FormatJson req)
      logNST LevelDebug logSrc (toText res)
-     eitherToMonadThrow (parseJSONResponse res)
+     pure (parseJSONResponse res)
   where
     logSrc = "pinboardJson"
 
@@ -154,8 +154,8 @@ runPinboardSingleRaw config req =
     logSrc = "runPinboardSingleRaw"
 
 runPinboardSingleRawBS
-  :: (MonadErrorPinboard e)
-  => PinboardConfig -> PinboardRequest -> IO (e LBS.ByteString)
+  :: 
+  PinboardConfig -> PinboardRequest -> IO (Either PinboardError LBS.ByteString)
 runPinboardSingleRawBS config req = do
   res <- runPinboardSingleRaw config req
   case checkStatusCodeResponse res of
@@ -166,11 +166,11 @@ runPinboardSingleRawBS config req = do
     logErrorAndThrow e =
       runConfigLoggingT config $
       do logNST LevelError logSrc (toText e)
-         return (throwError e)
+         return (Left e)
 
 runPinboardSingleJson
-  :: (MonadErrorPinboard e, FromJSON a)
-  => PinboardConfig -> PinboardRequest -> IO (e a)
+  :: FromJSON a
+  => PinboardConfig -> PinboardRequest -> IO (Either PinboardError a)
 runPinboardSingleJson config = runPinboard config . pinboardJson
 
 --------------------------------------------------------------------------------
@@ -223,30 +223,28 @@ buildReq url = do
 
 --------------------------------------------------------------------------------
 parseJSONResponse
-  :: (MonadErrorPinboard e, FromJSON a)
-  => Response LBS.ByteString -> e a
+  :: FromJSON a
+  => Response LBS.ByteString -> Either PinboardError a
 parseJSONResponse response =
   either
-    (throwError . addErrMsg (toText (responseBody response)))
+    (Left . addErrMsg (toText (responseBody response)))
     (const $ decodeJSONResponse (responseBody response))
     (checkStatusCodeResponse response)
 
 decodeJSONResponse
-  :: (MonadErrorPinboard e, FromJSON a)
-  => LBS.ByteString -> e a
+  :: FromJSON a
+  => LBS.ByteString -> Either PinboardError a
 decodeJSONResponse s =
   let r = eitherDecodeStrict' (LBS.toStrict s)
-  in either (throwError . createParserErr . T.pack) return r
+  in either (Left . createParserErr . T.pack) return r
 
 --------------------------------------------------------------------------------
 checkStatusCodeResponse
-  :: MonadErrorPinboard e
-  => Response a -> e ()
+  :: Response a -> Either PinboardError ()
 checkStatusCodeResponse = checkStatusCode . statusCode . responseStatus
 
 checkStatusCode
-  :: MonadErrorPinboard e
-  => Int -> e ()
+  :: Int -> Either PinboardError ()
 checkStatusCode =
   \case
     200 -> return ()
@@ -262,10 +260,9 @@ checkStatusCode =
 
 --------------------------------------------------------------------------------
 httpStatusPinboardError
-  :: MonadErrorPinboard e
-  => PinboardErrorHTTPCode -> e a
+  :: PinboardErrorHTTPCode -> Either PinboardError a
 httpStatusPinboardError err =
-  throwError
+  Left
     defaultPinboardError
     { errorType = HttpStatusFailure
     , errorHTTP = Just err
@@ -286,7 +283,7 @@ newMgr =
   withSocketsDo . newManager $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
 mgrFail
-  :: (Monad m, MonadErrorPinboard e)
-  => PinboardErrorType -> SomeException -> m (e b)
+  :: (Monad m)
+  => PinboardErrorType -> SomeException -> m (Either PinboardError b)
 mgrFail e msg =
-  return $ throwError $ PinboardError e (toText msg) Nothing Nothing Nothing
+  return $ Left $ PinboardError e (toText msg) Nothing Nothing Nothing

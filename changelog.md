@@ -1,3 +1,9 @@
+__v0.10.0.0
+
+refactor; use UnliftIO; remove MonadError/MonadErrorPinboard; remove ExceptT from PinboardT
+
+** previously caught http exceptions may no longer by automatically be caught - need to test further **
+
 __v0.9.12.11
 
 update deps bounds

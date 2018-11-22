@@ -24,9 +24,8 @@ module Pinboard.Logging
 
 import Control.Monad.IO.Class
 import Control.Monad.Logger
-import Control.Exception.Safe
+import UnliftIO
 import Data.Time
-import Data.Monoid
 
 import Data.Text as T
 
@@ -55,16 +54,16 @@ withNoLogging p =
 ------------------------------------------------------------------------------
 
 logOnException
-  :: (MonadLogger m, MonadCatch m, MonadIO m)
+  :: (MonadLogger m, MonadUnliftIO m)
   => T.Text -> m a -> m a
 logOnException src =
   handle
     (\(e :: SomeException) -> do
        logNST LevelError src (toText e)
-       throw e)
+       throwIO e)
 
 runLogOnException
-  :: (MonadCatch m, MonadIO m)
+  :: MonadUnliftIO m
   => T.Text -> PinboardConfig -> LoggingT m a -> m a
 runLogOnException logSrc config = runConfigLoggingT config . logOnException logSrc
 

@@ -44,6 +44,7 @@ import Data.Time (UTCTime)
 import Pinboard.Types (MonadPinboard, ResultFormatType(..))
 import Pinboard.ApiTypes
 import Pinboard.ApiRequest
+import Pinboard.Error
 
 import Control.Applicative
 import Prelude
@@ -54,7 +55,7 @@ getPostsRecent
   :: MonadPinboard m
   => Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Count -- ^ number of results to return. Default is 15, max is 100  
-  -> m Posts
+  -> m (Either PinboardError Posts)
 getPostsRecent tags count =
   pinboardJson $ getPostsRecentRequest FormatJson tags count
 
@@ -67,7 +68,7 @@ getPostsAll
   -> Maybe FromDateTime -- ^ return only bookmarks created after this time
   -> Maybe ToDateTime -- ^ return only bookmarks created before this time
   -> Maybe Meta -- ^ include a change detection signature for each bookmark
-  -> m [Post]
+  -> m (Either PinboardError [Post])
 getPostsAll tags start results fromdt todt meta =
   pinboardJson $ getPostsAllRequest FormatJson tags start results fromdt todt meta
 
@@ -78,7 +79,7 @@ getPostsForDate
   => Maybe [Tag] -- ^ filter by up to three tags
   -> Maybe Date -- ^ return results bookmarked on this day
   -> Maybe Url -- ^ return bookmark for this URL
-  -> m Posts
+  -> m (Either PinboardError Posts)
 getPostsForDate tags date url =
   pinboardJson $ getPostsForDateRequest FormatJson tags date url
 
@@ -86,30 +87,30 @@ getPostsForDate tags date url =
 getPostsDates
   :: MonadPinboard m
   => Maybe [Tag] -- ^ filter by up to three tags
-  -> m PostDates
+  -> m (Either PinboardError PostDates)
 getPostsDates tags = pinboardJson $ getPostsDatesRequest FormatJson tags
 
 -- | posts/update : Returns the most recent time a bookmark was added, updated or deleted.
 getPostsMRUTime
   :: MonadPinboard m
-  => m UTCTime
+  => m (Either PinboardError UTCTime)
 getPostsMRUTime =
-  fromUpdateTime <$> pinboardJson (getPostsMRUTimeRequest FormatJson)
+  fmap fromUpdateTime <$> pinboardJson (getPostsMRUTimeRequest FormatJson)
 
 -- | posts/suggest : Returns a list of popular tags and recommended tags for a given URL. 
 -- Popular tags are tags used site-wide for the url; 
 -- Recommended tags are drawn from the user's own tags.
 getSuggestedTags
   :: MonadPinboard m
-  => Url -> m [Suggested]
+  => Url -> m (Either PinboardError [Suggested])
 getSuggestedTags url = pinboardJson $ getSuggestedTagsRequest FormatJson url
 
 -- | posts/delete : Delete an existing bookmark.
 deletePost
   :: MonadPinboard m
-  => Url -> m ()
+  => Url -> m (Either PinboardError ())
 deletePost url =
-  fromDoneResult <$> pinboardJson (deletePostRequest FormatJson url)
+  fmap fromDoneResult <$> pinboardJson (deletePostRequest FormatJson url)
 
 -- | posts/add : Add or Update a bookmark
 addPost
@@ -122,9 +123,9 @@ addPost
   -> Maybe Replace -- ^ Replace any existing bookmark with this URL. Default is yes. If set to no, will fail if bookmark exists
   -> Maybe Shared -- ^ Make bookmark public. Default is "yes" unless user has enabled the "save all bookmarks as private" user setting, in which case default is "no"
   -> Maybe ToRead -- ^ Marks the bookmark as unread. Default is "no"
-  -> m ()
+  -> m (Either PinboardError ())
 addPost url descr ext tags ctime repl shared toread =
-  fromDoneResult <$>
+  fmap fromDoneResult <$>
   pinboardJson
     (addPostRequest FormatJson url descr ext tags ctime repl shared toread)
 
@@ -133,58 +134,58 @@ addPostRec
   :: MonadPinboard m
   => Post -- ^ a Post record
   -> Replace -- ^ Replace any existing bookmark with the Posts URL. If set to no, will fail if bookmark exists 
-  -> m ()
+  -> m (Either PinboardError ())
 addPostRec post replace =
-  fromDoneResult <$> pinboardJson (addPostRecRequest FormatJson post replace)
+  fmap fromDoneResult <$> pinboardJson (addPostRecRequest FormatJson post replace)
 
 -- TAGS ----------------------------------------------------------------------
 -- | tags/get : Returns a full list of the user's tags along with the number of 
 -- times they were used.
 getTags
   :: MonadPinboard m
-  => m TagMap
-getTags = fromJsonTagMap <$> pinboardJson (getTagsRequest FormatJson)
+  => m (Either PinboardError TagMap)
+getTags = fmap fromJsonTagMap <$> pinboardJson (getTagsRequest FormatJson)
 
 -- | tags/delete : Delete an existing tag.
 deleteTag
   :: MonadPinboard m
-  => Tag -> m ()
+  => Tag -> m (Either PinboardError ())
 deleteTag tag =
-  fromDoneResult <$> pinboardJson (deleteTagRequest FormatJson tag)
+  fmap fromDoneResult <$> pinboardJson (deleteTagRequest FormatJson tag)
 
 -- | tags/rename : Rename an tag, or fold it in to an existing tag
 renameTag
   :: MonadPinboard m
   => Old -- ^ note: match is not case sensitive
   -> New -- ^ if empty, nothing will happen
-  -> m ()
+  -> m (Either PinboardError ())
 renameTag old new =
-  fromDoneResult <$> pinboardJson (renameTagRequest FormatJson old new)
+  fmap fromDoneResult <$> pinboardJson (renameTagRequest FormatJson old new)
 
 -- USER ----------------------------------------------------------------------
 -- | user/secret : Returns the user's secret RSS key (for viewing private feeds)
 getUserSecretRssKey
   :: MonadPinboard m
-  => m Text
+  => m (Either PinboardError Text)
 getUserSecretRssKey =
-  fromTextResult <$> pinboardJson (getUserSecretRssKeyRequest FormatJson)
+  fmap fromTextResult <$> pinboardJson (getUserSecretRssKeyRequest FormatJson)
 
 -- | user/api_token : Returns the user's API token (for making API calls without a password)
 getUserApiToken
   :: MonadPinboard m
-  => m Text
+  => m (Either PinboardError Text)
 getUserApiToken =
-  fromTextResult <$> pinboardJson (getUserApiTokenRequest FormatJson)
+  fmap fromTextResult <$> pinboardJson (getUserApiTokenRequest FormatJson)
 
 -- NOTES ---------------------------------------------------------------------
 -- | notes/list : Returns a list of the user's notes (note text detail is not included)
 getNoteList
   :: MonadPinboard m
-  => m NoteList
+  => m (Either PinboardError NoteList)
 getNoteList = pinboardJson $ getNoteListRequest FormatJson
 
 -- | notes/id : Returns an individual user note. The hash property is a 20 character long sha1 hash of the note text.
 getNote
   :: MonadPinboard m
-  => NoteId -> m Note
+  => NoteId -> m (Either PinboardError Note)
 getNote noteid = pinboardJson $ getNoteRequest FormatJson noteid

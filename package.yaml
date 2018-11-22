@@ -1,5 +1,5 @@
 name: pinboard
-version: '0.9.12.11'
+version: '0.10.0.0'
 synopsis: Access to the Pinboard API
 description: ! '
 
@@ -28,7 +28,8 @@ dependencies:
 - base >=4.6 && <5.0
 - transformers >=0.4.0.0
 - mtl >=2.2.1
-- safe-exceptions <0.2
+- unliftio
+- unliftio-core
 - unordered-containers
 library:
   source-dirs: src

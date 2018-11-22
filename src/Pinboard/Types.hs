@@ -25,42 +25,38 @@ module Pinboard.Types
 
 import Control.Monad.Reader (ReaderT)
 import Control.Monad.Reader.Class (MonadReader)
-import Control.Monad.Trans.Except (ExceptT, runExceptT)
 import Control.Monad.Trans.Reader (runReaderT)
 import Control.Monad.IO.Class (MonadIO)
 
-import Control.Exception.Safe
+import UnliftIO
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
 import Data.Time.Clock (UTCTime)
-import Data.IORef
 import Network.HTTP.Client (Manager)
 
-import Pinboard.Error
 import Control.Monad.Logger
 
-import Control.Applicative
 import Prelude
 
 ------------------------------------------------------------------------------
 type PinboardEnv = (PinboardConfig, Manager)
 
-type PinboardT m a = ReaderT PinboardEnv (ExceptT PinboardError (LoggingT m)) a
+type PinboardT m a = ReaderT PinboardEnv (LoggingT m) a
 
 runPinboardT
-  :: (MonadIO m, MonadCatch m)
-  => PinboardEnv -> PinboardT m a -> m (Either PinboardError a)
+  :: MonadUnliftIO m
+  => PinboardEnv -> PinboardT m a -> m a
 runPinboardT env@(config, _) f =
   runConfigLoggingT
     config
-    (pinboardExceptionToEither (runExceptT (runReaderT f env)))
+    (runReaderT f env)
 
 ------------------------------------------------------------------------------
 -- |Typeclass alias for the return type of the API functions (keeps the
 -- signatures less verbose)
-type MonadPinboard m = (Functor m, Applicative m, MonadIO m, MonadCatch m, MonadReader PinboardEnv m, MonadLogger m)
+type MonadPinboard m = (MonadUnliftIO m, MonadReader PinboardEnv m, MonadLogger m)
 
 ------------------------------------------------------------------------------
 type ExecLoggingT = forall m. MonadIO m =>

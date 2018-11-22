@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1673165f708104f1e817541e1b6f9c564bdecacc585826d2a67884ce5f1073b8
+-- hash: a128fdac0398efc5e98857801cf3fd9898c22a2f68dcc4c33c1f8ef86bf671e9
 
 name:           pinboard
-version:        0.9.12.11
+version:        0.10.0.0
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -47,10 +47,11 @@ library
     , network >=2.6.2 && <2.8
     , profunctors >=5
     , random >=1.1
-    , safe-exceptions <0.2
     , text >=0.11 && <1.3
     , time >=1.5 && <1.9
     , transformers >=0.4.0.0
+    , unliftio
+    , unliftio-core
     , unordered-containers
     , vector >=0.10.9 && <0.13
   exposed-modules:
@@ -83,11 +84,12 @@ test-suite tests
     , hspec >=1.8
     , mtl >=2.2.1
     , pinboard
-    , safe-exceptions <0.2
     , semigroups
     , text
     , time
     , transformers >=0.4.0.0
+    , unliftio
+    , unliftio-core
     , unordered-containers
   other-modules:
       ApproxEq
