@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE Rank2Types #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 -- |
 -- Module      : Pinboard.Logging
@@ -30,6 +31,7 @@ import Data.Time
 import Data.Text as T
 
 import Pinboard.Types
+import Data.Monoid
 
 ------------------------------------------------------------------------------
 

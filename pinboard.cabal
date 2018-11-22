@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a128fdac0398efc5e98857801cf3fd9898c22a2f68dcc4c33c1f8ef86bf671e9
+-- hash: bf527a9a3fada60d79dac953824902ac4fd1ca4ed0c7bdb908be52c8c54dcb2b
 
 name:           pinboard
-version:        0.10.0.0
+version:        0.10.0.2
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
