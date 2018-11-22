@@ -1,6 +1,8 @@
--- This file has been generated from package.yaml by hpack version 0.15.0.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: c771d6300a344f7d728210a2a2a39915793546acf47280b0d6a03429a20ad9ef
 
 name:           sample
 version:        0.1.0.0
@@ -13,30 +15,42 @@ cabal-version:  >= 1.10
 
 executable sample
   main-is: sample.hs
+  other-modules:
+      Paths_sample
   hs-source-dirs:
       ./.
   other-extensions: TemplateHaskell
   ghc-options: -Wall
   build-depends:
-      base >=4.6 && <5.0
-    , lens >=4.13
-    , transformers >=0.4.0.0
-    , pinboard
+      aeson
     , base >=4.6 && <5.0
+    , bytestring
+    , http-client >=0.5 && <0.6
+    , http-client-tls >=0.3.0 && <0.4
+    , http-types >=0.8 && <0.13
+    , lens >=4.13
+    , pinboard
+    , text
     , transformers >=0.4.0.0
   default-language: Haskell2010
 
 executable sampleLens
   main-is: sampleLens.hs
+  other-modules:
+      Paths_sample
   hs-source-dirs:
       ./.
   other-extensions: TemplateHaskell
   ghc-options: -Wall
   build-depends:
-      base >=4.6 && <5.0
-    , lens >=4.13
-    , transformers >=0.4.0.0
-    , pinboard
+      aeson
     , base >=4.6 && <5.0
+    , bytestring
+    , http-client >=0.5 && <0.6
+    , http-client-tls >=0.3.0 && <0.4
+    , http-types >=0.8 && <0.13
+    , lens >=4.13
+    , pinboard
+    , text
     , transformers >=0.4.0.0
   default-language: Haskell2010
