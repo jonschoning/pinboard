@@ -182,10 +182,10 @@ getUserApiToken =
 getNoteList
   :: MonadPinboard m
   => m (Either PinboardError NoteList)
-getNoteList = pinboardJson $ getNoteListRequest FormatJson
+getNoteList = pinboardJson (getNoteListRequest FormatJson)
 
 -- | notes/id : Returns an individual user note. The hash property is a 20 character long sha1 hash of the note text.
 getNote
   :: MonadPinboard m
   => NoteId -> m (Either PinboardError Note)
-getNote noteid = pinboardJson $ getNoteRequest FormatJson noteid
+getNote noteid = pinboardJson (getNoteRequest FormatJson noteid)

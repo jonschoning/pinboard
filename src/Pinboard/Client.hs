@@ -86,6 +86,8 @@ import GHC.IO (unsafePerformIO)
 import Data.IORef
 import Data.Time.Clock
 import Data.Time.Calendar
+import Data.Bifunctor
+import Data.Function
 
 import Control.Applicative
 import Prelude
@@ -226,10 +228,8 @@ parseJSONResponse
   :: FromJSON a
   => Response LBS.ByteString -> Either PinboardError a
 parseJSONResponse response =
-  either
-    (Left . addErrMsg (toText (responseBody response)))
-    (const $ decodeJSONResponse (responseBody response))
-    (checkStatusCodeResponse response)
+  checkStatusCodeResponse response
+  *> decodeJSONResponse (responseBody response)
 
 decodeJSONResponse
   :: FromJSON a
@@ -240,8 +240,10 @@ decodeJSONResponse s =
 
 --------------------------------------------------------------------------------
 checkStatusCodeResponse
-  :: Response a -> Either PinboardError ()
-checkStatusCodeResponse = checkStatusCode . statusCode . responseStatus
+  :: Response LBS.ByteString -> Either PinboardError ()
+checkStatusCodeResponse resp =
+  (checkStatusCode . statusCode . responseStatus) resp
+  & (first . addErrMsg . toText . responseBody) resp
 
 checkStatusCode
   :: Int -> Either PinboardError ()
