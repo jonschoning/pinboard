@@ -1,3 +1,7 @@
+__v0.10.1.2
+
+update to ghc 8.6; update containers
+
 __v0.10.0.0
 
 refactor; use UnliftIO; remove MonadError/MonadErrorPinboard; remove ExceptT from PinboardT

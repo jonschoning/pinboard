@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1cb8cbc23f26eef51b2d8a9afbbec2f4849424cfe6b3cd07696442543f9b9d0d
+-- hash: 1698c9dd781d3bc7c6f7fc878041c9a778c65a6418c5a7759b1a57f46efc35f8
 
 name:           pinboard
 version:        0.10.1.2
@@ -38,13 +38,13 @@ library
       aeson >=0.11.1 && <2.0
     , base >=4.6 && <5.0
     , bytestring >=0.10.0 && <0.11
-    , containers >=0.5.0.0 && <0.6
+    , containers >=0.5.0.0 && <0.7
     , http-client >=0.5 && <0.6
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , monad-logger >=0.3 && <0.4
     , mtl >=2.2.1
-    , network >=2.6.2 && <2.8
+    , network >=2.6.2 && <2.9
     , profunctors >=5
     , random >=1.1
     , text >=0.11 && <1.3

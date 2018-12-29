@@ -60,7 +60,6 @@ import Data.ByteString.Char8 (pack)
 import Data.Monoid ((<>))
 import Data.Aeson (FromJSON, eitherDecodeStrict')
 
-import Network (withSocketsDo)
 import Network.HTTP.Types (urlEncode)
 import Network.HTTP.Types.Status (statusCode)
 
@@ -282,7 +281,7 @@ createParserErr msg = PinboardError ParseFailure msg Nothing Nothing Nothing
 --------------------------------------------------------------------------------
 newMgr :: IO Manager
 newMgr =
-  withSocketsDo . newManager $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
+  newManager $ managerSetProxy (proxyEnvironment Nothing) tlsManagerSettings
 
 mgrFail
   :: (Monad m)

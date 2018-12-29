@@ -11,4 +11,4 @@ extra-package-dbs: []
 packages: []
 packages: ['.']
 extra-deps: []
-resolver: lts-12.18
+resolver: lts-13.0
