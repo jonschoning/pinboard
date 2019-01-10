@@ -1,3 +1,7 @@
+__v0.10.1.3
+
+http-client 0.6
+
 __v0.10.1.2
 
 update to ghc 8.6; update containers
