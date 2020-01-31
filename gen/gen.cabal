@@ -1,17 +1,19 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 73f4396a53d084999b17bb0b98e8dba1b5dbcbf65643d649f6cb8c16e29dacf1
+-- hash: fefb93feb98a83b3edcdd4acec376544ac4f080eb165df5eeb90764bc9d7d167
 
 name:           gen
 version:        0.1.0.0
 author:         Jon Schoning
 maintainer:     jonschoning@gmail.com
+copyright:      Copyright (c) 2015 Jon Schoning
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 
 executable gen
   main-is: Main.hs
@@ -26,16 +28,15 @@ executable gen
     , bytestring >=0.10.0 && <0.11
     , containers >=0.5.0.0 && <0.7
     , either
-    , http-client >=0.5 && <0.6
+    , http-client >=0.5 && <0.7
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , lens >=4.13
     , monad-logger >=0.3 && <0.4
     , mtl >=2.2.1
-    , network >=2.6.2 && <2.9
+    , network >=2.6.2 && <4
     , profunctors >=5
     , random >=1.1
-    , safe-exceptions <0.2
     , template-haskell >=2.10
     , text >=0.11 && <1.3
     , time >=1.5 && <1.9

@@ -2,6 +2,7 @@ name: sample
 version: '0.1.0.0'
 author: Jon Schoning
 maintainer: jonschoning@gmail.com
+copyright: Copyright (c) 2015 Jon Schoning
 license: MIT
 other-extensions:
 - TemplateHaskell
@@ -16,7 +17,7 @@ dependencies:
 - text
 - bytestring
 - http-types >=0.8 && <0.13
-- http-client >=0.5 && <0.6
+- http-client >=0.5 && <0.7
 - http-client-tls >=0.3.0 && <0.4
 executables:
   sampleLens:

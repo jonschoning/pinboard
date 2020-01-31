@@ -1,17 +1,19 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c771d6300a344f7d728210a2a2a39915793546acf47280b0d6a03429a20ad9ef
+-- hash: f7d0371f530e5e437fcf9e30d487593308b5872e2cad1a13c57b98a5d352a491
 
 name:           sample
 version:        0.1.0.0
 author:         Jon Schoning
 maintainer:     jonschoning@gmail.com
+copyright:      Copyright (c) 2015 Jon Schoning
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 
 executable sample
   main-is: sample.hs
@@ -25,7 +27,7 @@ executable sample
       aeson
     , base >=4.6 && <5.0
     , bytestring
-    , http-client >=0.5 && <0.6
+    , http-client >=0.5 && <0.7
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , lens >=4.13
@@ -46,7 +48,7 @@ executable sampleLens
       aeson
     , base >=4.6 && <5.0
     , bytestring
-    , http-client >=0.5 && <0.6
+    , http-client >=0.5 && <0.7
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , lens >=4.13

@@ -1,9 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Pinboard
-import Control.Monad.Trans.Except
-import Control.Monad.Trans.Reader
-import Control.Monad
 
 main :: IO ()
 main = do
