@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 163a88562cf0098b997a1d0d286a14de1c4d29a90f71a7fa48e0ec0837699263
+-- hash: ff68813028e8b42352a8b6049b8639f121f4776089b9c1233a42bd7d043188ae
 
 name:           pinboard
-version:        0.10.1.4
+version:        0.10.1.5
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
