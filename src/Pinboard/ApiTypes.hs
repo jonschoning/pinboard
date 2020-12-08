@@ -198,7 +198,7 @@ instance ToJSON Note where
       ]
 
 readNoteTime
-  :: Monad m
+  :: MonadFail m
   => String -> m UTCTime
 readNoteTime = parseTimeM True defaultTimeLocale "%F %T"
 

@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ff68813028e8b42352a8b6049b8639f121f4776089b9c1233a42bd7d043188ae
+-- hash: eaf046ffeb948c5457f43992f4074cd5931d51098aed3ec2cac26197374b3ff1
 
 name:           pinboard
-version:        0.10.1.5
+version:        0.10.2.0
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -49,7 +49,7 @@ library
     , profunctors >=5
     , random >=1.1
     , text >=0.11 && <1.3
-    , time >=1.5 && <1.9
+    , time >1.3
     , transformers >=0.4.0.0
     , unliftio
     , unliftio-core

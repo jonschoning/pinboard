@@ -57,7 +57,6 @@ import Control.Monad.IO.Unlift
 import UnliftIO.Exception
 
 import Data.ByteString.Char8 (pack)
-import Data.Monoid ((<>))
 import Data.Aeson (FromJSON, eitherDecodeStrict')
 
 import Network.HTTP.Types (urlEncode)

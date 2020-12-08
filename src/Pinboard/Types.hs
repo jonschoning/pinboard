@@ -26,7 +26,6 @@ module Pinboard.Types
 import Control.Monad.Reader (ReaderT)
 import Control.Monad.Reader.Class (MonadReader)
 import Control.Monad.Trans.Reader (runReaderT)
-import Control.Monad.IO.Class (MonadIO)
 
 import UnliftIO
 
