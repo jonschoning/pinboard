@@ -8,6 +8,7 @@ import Pinboard.ApiTypes
 import Data.Text (Text)
 import Data.Time (UTCTime)
 import Data.Time.Calendar (Day)
+import Data.Kind (Type)
 
 import Control.Applicative
 import Data.Profunctor
@@ -17,15 +18,17 @@ import Prelude hiding (words, unwords)
 -- * Lens Aliases
 type Lens_' s a = Lens_ s s a a
 
-type Lens_ s t a b = forall (f :: * -> *). Functor f =>
-                                           (a -> f b) -> s -> f t
+type Lens_ s t a b
+   = forall (f :: Type -> Type). Functor f =>
+                                   (a -> f b) -> s -> f t
 
 type Prism_' s a = Prism_ s s a a
 
-type Prism_ s t a b = forall (p :: * -> * -> *) (f :: * -> *). (Choice p
-                                                               ,Applicative f) =>
+type Prism_ s t a b
+   = forall (p :: Type -> Type -> Type) (f :: Type -> Type). ( Choice p
+                                                             , Applicative f
+                                                             ) =>
                                                                p a (f b) -> p s (f t)
-
 -- * Posts
 postsDateL :: Lens_' Posts UTCTime
 postsDateL f_acx6 (Posts x1_acx7 x2_acx8 x3_acx9) =

@@ -1,3 +1,6 @@
+__v0.10.3.0
+ghc9.0, aeson 2.0
+
 __v0.10.2.0
 
 update time dependency

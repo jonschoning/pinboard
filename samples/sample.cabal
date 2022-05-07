@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f7d0371f530e5e437fcf9e30d487593308b5872e2cad1a13c57b98a5d352a491
+-- hash: fd4372ad3bd9ad2506b7ef3b316df41e1e9fb6656ffbd761ac3b2421309fc189
 
 name:           sample
 version:        0.1.0.0
@@ -21,13 +21,14 @@ executable sample
       Paths_sample
   hs-source-dirs:
       ./.
-  other-extensions: TemplateHaskell
+  other-extensions:
+      TemplateHaskell
   ghc-options: -Wall
   build-depends:
       aeson
     , base >=4.6 && <5.0
     , bytestring
-    , http-client >=0.5 && <0.7
+    , http-client >=0.5 && <0.8
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , lens >=4.13
@@ -42,13 +43,14 @@ executable sampleLens
       Paths_sample
   hs-source-dirs:
       ./.
-  other-extensions: TemplateHaskell
+  other-extensions:
+      TemplateHaskell
   ghc-options: -Wall
   build-depends:
       aeson
     , base >=4.6 && <5.0
     , bytestring
-    , http-client >=0.5 && <0.7
+    , http-client >=0.5 && <0.8
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
     , lens >=4.13

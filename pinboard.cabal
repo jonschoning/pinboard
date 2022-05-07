@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: eaf046ffeb948c5457f43992f4074cd5931d51098aed3ec2cac26197374b3ff1
+-- hash: cfb12dfa6ca61ff5add72cb940500a794f411ce22776a260ad2d51b29ec5ed81
 
 name:           pinboard
-version:        0.10.2.0
+version:        0.10.3.0
 synopsis:       Access to the Pinboard API
 description:    .
                 The Pinboard API is a way to interact programatically with
@@ -36,14 +36,14 @@ library
       src
   ghc-options: -Wall -fwarn-incomplete-patterns -funbox-strict-fields -fexpose-all-unfoldings
   build-depends:
-      aeson >=0.11.1 && <2.0
+      aeson >=2.0 && <3.0
     , base >=4.6 && <5.0
     , bytestring >=0.10.0 && <0.11
     , containers >=0.5.0.0 && <0.7
-    , http-client >=0.5 && <0.7
+    , http-client >=0.5 && <0.8
     , http-client-tls >=0.3.0 && <0.4
     , http-types >=0.8 && <0.13
-    , monad-logger >=0.3 && <0.4
+    , monad-logger ==0.3.*
     , mtl >=2.2.1
     , network >=2.6.2 && <4
     , profunctors >=5

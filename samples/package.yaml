@@ -17,7 +17,7 @@ dependencies:
 - text
 - bytestring
 - http-types >=0.8 && <0.13
-- http-client >=0.5 && <0.7
+- http-client >=0.5 && <0.8
 - http-client-tls >=0.3.0 && <0.4
 executables:
   sampleLens:

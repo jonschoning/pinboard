@@ -16,7 +16,9 @@ module Pinboard.ApiTypes where
 
 import Data.Aeson
 import Data.Aeson.Types (Parser)
-import Data.HashMap.Strict (HashMap, member, toList)
+import qualified Data.Aeson.KeyMap as A
+import qualified Data.Aeson.Key as A
+import Data.HashMap.Strict (HashMap)
 import Data.Data (Data, Typeable)
 import Data.Text (Text, words, unwords, unpack, pack)
 import Data.Time (UTCTime, parseTimeM)
@@ -107,8 +109,8 @@ instance FromJSON PostDates where
     where
       parseDates :: Value -> [DateCount]
       parseDates (Object o') = do
-        (dateStr, String countStr) <- toList o'
-        return (read (unpack dateStr), read (unpack countStr))
+        (dateStr, String countStr) <- A.toList o'
+        return (read (A.toString dateStr), read (unpack countStr))
       parseDates _ = []
   parseJSON _ = fail "bad parse"
 
@@ -121,7 +123,7 @@ instance ToJSON PostDates where
       ]
     where
       dateCountToPair (day, count) =
-        ((pack . show) day, String $ (pack . show) count)
+        ((A.fromString . show) day, String $ (pack . show) count)
 
 type DateCount = (Day, Int)
 
@@ -216,7 +218,7 @@ instance FromJSON JsonTagMap where
   parseJSON = toTags
     where
       toTags (Object o) =
-        return . ToJsonTagMap $ HM.map (\(String s) -> read (unpack s)) o
+        return . ToJsonTagMap $ HM.map (\(String s) -> read (unpack s)) $ A.toHashMapText o
       toTags _ = fail "bad parse"
 
 instance ToJSON JsonTagMap where
@@ -229,8 +231,8 @@ data Suggested
 
 instance FromJSON Suggested where
   parseJSON (Object o)
-    | member "popular" o = Popular <$> (o .: "popular")
-    | member "recommended" o = Recommended <$> (o .: "recommended")
+    | A.member "popular" o = Popular <$> (o .: "popular")
+    | A.member "recommended" o = Recommended <$> (o .: "recommended")
     | otherwise = fail "bad parse"
   parseJSON _ = fail "bad parse"
 
